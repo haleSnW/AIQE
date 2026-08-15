@@ -1,0 +1,23 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+build/
+dist/
+
+# 虚拟环境
+.venv/
+venv/
+
+# pytest
+.pytest_cache/
+
+# 评估产物（本地运行 AIQE 报告/基线时产生）
+.AIQE/
+*.AIQE-report.json
+AIQE-report.json
+
+# 示例产物（examples/ 脚本本地运行产生）
+examples/.regression-demo/
+AIQE-report-*.json
