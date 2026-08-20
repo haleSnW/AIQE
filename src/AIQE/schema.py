@@ -1,12 +1,9 @@
-# AIQE/schema.py —— 数据模型与 Runner 接口（独立版）
+# AIQE/schema.py —— 数据模型与 Runner 接口
 #
-# 镜像说明（协议副本说明）：本模块是 上游项目 仓库内 framework/ai_eval/schema.py
-# 的独立导出版，公开 API 同构。与原版的两处导出差异：
-#   1. pydantic BaseModel → 标准库 dataclass（独立版零第三方依赖；
-#      保留 model_dump() 方法以兼容原版调用方式）
-#   2. 对 上游项目 侧框架 models/backend.py 的引用 → 本地 AIQE/protocol.py
-#      （协议副本说明：即同目录 protocol.py 单文件镜像副本）
-# 其余字段、默认值、方法语义与 上游项目 侧完全一致，由镜像契约测试保障。
+# 纯标准库实现：dataclass 数据模型（ScoreBreakdown / TestCase /
+# EvaluationResult）+ ModelRunner 执行器接口（LocalRunner 本地确定性 /
+# OllamaRunner HTTP 接入）。
+# 零第三方运行时依赖。
 
 from __future__ import annotations
 import abc
@@ -117,12 +114,12 @@ class ModelRunner(abc.ABC):
 class LocalRunner(ModelRunner):
     """本地默认确定性执行器（无网络）。
 
-    类名与 backend 标识保留 上游项目 原名（镜像契约稳定性：两边的断言语义
-    逐字一致）；实现上不依赖 上游项目 任何产品代码，只使用本地协议副本。
-    使用 unittest.mock.Mock 时可直接注入 mock 后端。
+    固定返回包含用例 id 的确定性响应，用于测试框架自检与离线演示；
+    也可通过 backend 参数注入任意满足 AIQE.protocol.Backend 的对象，
+    让执行路径复用真实后端。使用 unittest.mock.Mock 时可直接注入 mock 后端。
     """
 
-    name = "上游项目"
+    name = "local"
 
     def __init__(self, backend: Any | None = None) -> None:
         self._backend = backend
@@ -151,7 +148,7 @@ class LocalRunner(ModelRunner):
             breakdown=case.scoring,
             latency_sec=mock_result.elapsed_sec,
             tokens_generated=mock_result.tokens_generated,
-            backend="上游项目",
+            backend="local",
             model_id="mock",
         )
 
@@ -162,7 +159,7 @@ class LocalRunner(ModelRunner):
 class OllamaRunner(ModelRunner):
     """Ollama HTTP API 执行器（需要本地 Ollama 服务运行）。
 
-    使用标准库 urllib 实现 HTTP 调用（原 上游项目 版用 httpx，独立版零依赖）。
+    使用标准库 urllib 实现 HTTP 调用（零第三方依赖）。
     """
 
     name = "ollama"

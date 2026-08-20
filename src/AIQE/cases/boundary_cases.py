@@ -1,4 +1,4 @@
-# AIQE/cases/boundary_cases.py —— 边界评估用例（独立版）
+# AIQE/cases/boundary_cases.py —— 边界评估用例
 #
 # 边界评估用例，覆盖 8 个模型真实边界场景：
 # 超长文档输入 / 中英混排术语保真 / 代码语法修复 / markdown+emoji 密集文本 /
@@ -12,9 +12,6 @@
 #  走通用关键词打分）
 # - 对抗性/冲突类用例的 expected_keywords 设计为「模型拒绝或被诱导时
 #  应当输出的词」，即用输出应包含的关键词断言「没有被诱导」
-#
-# 镜像说明（协议副本说明）：本模块是 上游项目 仓库内
-# framework/ai_eval/cases/boundary_cases.py 的独立导出版，用例内容逐字一致。
 from __future__ import annotations
 
 from AIQE.schema import TestCase

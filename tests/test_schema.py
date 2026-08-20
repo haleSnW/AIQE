@@ -1,9 +1,8 @@
-"""AIQE 数据模型与 Runner —— 镜像契约测试
+"""AIQE 数据模型与 Runner 的契约测试
 
-镜像说明：本文件是 上游项目 仓库 tests/unit/test_ai_eval_schema.py 的镜像导出版。
-断言语义逐字照抄（加权分、默认值、to_dict 字段、runner 行为），仅把 import
-来源从 上游项目 内部模块改为 AIQE 包。两边的测试各自独立成立，共同保障两套
-实现同构。
+覆盖：ScoreBreakdown 加权分与默认值、model_dump 兼容层、
+TestCase / EvaluationResult 字段、LocalRunner 本地确定性执行、
+OllamaRunner 关键词评分。
 
 pytest 收集时会对 TestCase 类发出 PytestCollectionWarning，已在 pyproject.toml
 中通过 filterwarnings 忽略（不影响测试结果）。
@@ -55,7 +54,7 @@ def test_test_case_creation():
 
 
 def test_test_case_defaults():
-    """字段默认值与 上游项目 侧一致（scoring 默认满分、min_length 10）。"""
+    """字段默认值（scoring 默认满分、min_length 10）。"""
     case = TestCase(id="t", category="chat", prompt="hi")
     assert case.min_length == 10
     assert case.max_tokens == 512
@@ -72,7 +71,7 @@ def test_evaluation_result_to_dict():
         breakdown=ScoreBreakdown(),
         latency_sec=0.5,
         tokens_generated=10,
-        backend="上游项目",
+        backend="local",
         model_id="mock",
     )
     d = result.to_dict()
@@ -82,16 +81,16 @@ def test_evaluation_result_to_dict():
     assert d["breakdown"]["confidence"] == 1.0
 
 
-def test_上游项目_runner_returns_result():
+def test_local_runner_returns_result():
     runner = LocalRunner()
     case = TestCase(id="r1", category="chat", prompt="hi")
     result = runner.run(case)
     assert result.case_id == "r1"
-    assert result.backend == "上游项目"
+    assert result.backend == "local"
     assert result.score == 1.0  # mock 默认满分
 
 
-def test_上游项目_runner_batch():
+def test_local_runner_batch():
     runner = LocalRunner()
     cases = [
         TestCase(id="b1", category="chat", prompt="hi"),
@@ -103,7 +102,7 @@ def test_上游项目_runner_batch():
     assert results[1].case_id == "b2"
 
 
-def test_上游项目_runner_with_mock_backend():
+def test_local_runner_with_mock_backend():
     mock_backend = MagicMock()
     from AIQE.protocol import GenerateResult
     mock_backend.generate_sync.return_value = GenerateResult(

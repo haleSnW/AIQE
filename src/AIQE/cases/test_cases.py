@@ -1,8 +1,6 @@
-# AIQE/cases/test_cases.py —— 标准评估用例（独立版）
+# AIQE/cases/test_cases.py —— 标准评估用例
 #
-# 预定义的评估用例，覆盖 chat / translation / structured / coding 四类场景。
-# 镜像说明（协议副本说明）：本模块是 上游项目 仓库内
-# framework/ai_eval/cases/test_cases.py 的独立导出版，用例内容逐字一致。
+# 预定义的评估用例，覆盖 chat / translation / json_output / coding_task 四类场景。
 from __future__ import annotations
 
 from AIQE.schema import ScoreBreakdown, TestCase

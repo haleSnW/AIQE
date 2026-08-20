@@ -1,19 +1,15 @@
-# AIQE/protocol.py —— Backend Protocol 镜像副本（协议副本说明）
+# AIQE/protocol.py —— Backend Protocol：统一模型后端抽象
 """
-统一模型后端抽象（Backend Protocol）—— AIQE 独立版
+统一模型后端抽象（Backend Protocol）—— AIQE 参考实现
 
 ═══════════════════════════════════════════════════════════════════
-【镜像契约说明】（协议副本说明：上游项目 仓库内对应原模块为
-framework/models/backend.py，本文件是其公开契约的单文件镜像副本）
+【协议定位】
+- 定义后端接入契约：BackendType / ModelProfile / GenerateOptions /
+  GenerateResult / Backend Protocol / make_generate_sync_default
+- 任何满足本 Protocol 的后端实例（MLX / Ollama / llama.cpp / 自研 /
+  mock），都可以直接注入 AIQE 的 ExecutionRunner，流水线零改动。
+- 本文件只含契约本身，不含任何具体推理后端的实现代码。
 ═══════════════════════════════════════════════════════════════════
-- 本文件与 上游项目 仓库 framework/models/backend.py 的公开数据结构保持同构：
-    BackendType / ModelProfile / GenerateOptions / GenerateResult /
-    Backend Protocol / make_generate_sync_default
-- 同构含义：字段名、默认值、方法签名、语义完全一致；
-  上游项目 侧对该契约的任何演进，本镜像需同步（由镜像契约测试保障）。
-- 本副本裁剪掉了 上游项目 侧与产品上下文相关的长文档（router/记忆系统等
-  内部引用），只保留契约本身；实现类仍与 上游项目 完全互通——任何满足本
-  Protocol 的后端实例，都可以直接注入 AIQE 的 ExecutionRunner。
 
 【为什么用 Protocol 而不是抽象基类 ABC？】
   - Protocol 是「结构性子类型」：只要一个类实现了这些方法，

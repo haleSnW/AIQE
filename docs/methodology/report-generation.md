@@ -1,3 +1,5 @@
+[简体中文](report-generation.md) | [English](report-generation.en.md)
+
 # 测试报告生成（Report Generation）
 
 > 报告是流程的「出口」：机器读 JSON、人读控制台摘要、团队读归档文档。

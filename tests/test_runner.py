@@ -1,12 +1,7 @@
-"""AIQE runner + judge + reporter + regression —— 镜像契约测试
+"""AIQE runner + judge + reporter + regression —— 契约测试
 
-镜像说明：本文件是 上游项目 仓库 tests/unit/test_ai_eval_runner.py 的镜像导出版。
-断言语义逐字照抄（成功/异常分支、评分 DAG、回归判定、报告字段、trace_id/
-payload_hash），仅作两处适配：
-  1. import 来源从 上游项目 内部模块改为 AIQE 包；
-  2. 基线文件改用 pytest tmp_path（原版写 /tmp 固定路径，语义相同）；
-  3. 依赖 上游项目 基础设施的两个测试（retry 装饰器 / circuit breaker 熔断）
-     不属于 AIQE 参考实现范围，不迁移（见文件末尾注释）。
+覆盖成功/异常分支、评分 DAG、回归判定、报告字段、trace_id/payload_hash。
+基线文件使用 pytest tmp_path（不依赖固定路径）。
 
 pytest 收集时会对 TestCase 类发出 PytestCollectionWarning，已在 pyproject.toml
 中通过 filterwarnings 忽略（不影响测试结果）。
@@ -402,12 +397,10 @@ def test_execution_runner_malformed_result():
     assert result.response == ""
 
 
-# 未迁移的两项（上游项目 内部基础设施，不属于 AIQE 参考实现范围）：
-#   test_execution_runner_with_retry_decorator —— 依赖 上游项目 的 retry_manager
-#   test_execution_runner_circuit_breaker_opens —— 依赖 上游项目 的 circuit_breaker
-# 这两项验证的是 上游项目 基础设施与 ExecutionRunner 的集成，而非 AIQE 框架自身；
+# 两项未覆盖的集成测试（retry 装饰器 / circuit breaker 熔断）不属于
+# AIQE 参考实现范围——那是外部基础设施与执行器的集成，而非框架自身；
 # AIQE 侧的对应保障是「任意满足 Backend Protocol 的后端都可注入」的
-# 镜像契约测试（见 test_backends.py）。
+# 契约测试（见 test_backends.py）。
 
 
 # ═══════════════════════════════════════════

@@ -1,4 +1,5 @@
-# AIQE/cases/ —— 测试用例定义包（独立版）
+# AIQE/cases/ —— 测试用例定义包
 #
-# 镜像说明（协议副本说明）：本包是 上游项目 仓库内 framework/ai_eval/cases/
-# 的独立导出版，用例内容逐字一致（仅 import 来源改为 AIQE.schema）。
+# test_cases.py     4 个标准用例（chat / translation / json_output / coding_task）
+# extended_cases.py 6 个扩展用例（中文场景）
+# boundary_cases.py 8 个边界用例（超长输入 / 对抗提示 / 多指令冲突 / 数字精确性…）

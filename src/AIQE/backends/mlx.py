@@ -1,20 +1,14 @@
-# AIQE/backends/mlx.py —— MLX 评估后端骨架（独立版）
+# AIQE/backends/mlx.py —— MLX 评估后端骨架
 #
 # 真实 MLX 推理的评估后端。仅在 MLX_EVAL_LIVE=1 时由工厂创建。
 #
-# 【与 上游项目 原版的差异】（协议副本说明：上游项目 仓库内对应原模块为
-# framework/ai_eval/backends/mlx.py，其 setup() 会延迟导入 上游项目 产品代码
-# framework/models/mlx_backend.MlxBackend）
-#   - 独立版不携带 上游项目 任何产品代码，因此 setup() 不再导入 MlxBackend，
-#     而是给出明确指引：MLX 实时评估需要使用者自行安装 mlx-lm 并提供满足
-#     AIQE.protocol.Backend 的适配层（本骨架的结构、委托逻辑、错误路径与
-#     原版完全一致，接口契约不变）。
-#
-# 当前状态：骨架（skeleton）
+# 【当前状态：骨架（skeleton）】
 #   - 类结构完整，满足 EvaluationBackend + Backend Protocol
 #   - setup() 直接报 ImportError 并给出接入指引（不在 import 时加载 MLX，
 #     避免无 MLX 环境下 import 失败）
 #   - 不下载模型（MLX_EVAL_LIVE=1 时由用户保证模型已就绪）
+#   - 真实推理需要使用者自行安装 mlx-lm，并提供满足 AIQE.protocol.Backend
+#     的适配层（本骨架的委托逻辑与错误路径保持完整，接口契约不变）
 
 from __future__ import annotations
 
@@ -42,8 +36,8 @@ class MlxEvalBackend:
         3. 内存充足
 
     【骨架行为】
-      - setup() 报 ImportError 并给出接入指引（独立版未内置 上游项目 的
-        MlxBackend 适配层，需要使用者自行注入）
+      - setup() 报 ImportError 并给出接入指引（本骨架未内置 MLX 适配层，
+        需要使用者自行注入满足 AIQE.protocol.Backend 的实例）
       - generate_sync() 委托给内部适配层实例
       - 未 setup 就调用 generate_sync() -> RuntimeError("模型未加载")
     """
@@ -61,11 +55,11 @@ class MlxEvalBackend:
     def setup(self) -> None:
         """加载 MLX 模型（幂等）。
 
-        【独立版行为】直接报 ImportError 并给出接入指引——
+        【行为】直接报 ImportError 并给出接入指引——
         真实 MLX 推理需要使用者：
           1. pip install mlx-lm
           2. 自行实现/注入满足 AIQE.protocol.Backend 的 MLX 适配层
-             （类名与委托路径与 上游项目 原版一致：self._mlx_backend）
+             （委托路径：self._mlx_backend）
         """
         if self._setup_done:
             return

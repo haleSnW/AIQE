@@ -1,7 +1,4 @@
-"""AIQE 扩展用例 —— 镜像契约测试
-
-镜像说明：本文件是 上游项目 仓库 tests/unit/test_ai_eval_extended_cases.py 的
-镜像导出版，断言语义逐字照抄，仅把 import 来源改为 AIQE 包。
+"""AIQE 扩展用例 —— 契约测试
 
 覆盖：
 - 6 个扩展用例可导入、字段完整（id / prompt / expected_keywords / max_tokens 等）

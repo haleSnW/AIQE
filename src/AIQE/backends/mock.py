@@ -1,12 +1,8 @@
-# AIQE/backends/mock.py —— 确定性 Mock 评估后端（独立版）
+# AIQE/backends/mock.py —— 确定性 Mock 评估后端
 #
 # 默认评估后端（MLX_EVAL_LIVE != "1" 时使用）。
 # 不依赖任何外部运行时，返回基于 prompt 内容的确定性响应。
 # 用于：单元测试、CI、无 MLX 环境下的评估流水线验证。
-#
-# 镜像说明（协议副本说明）：本模块是 上游项目 仓库内
-# framework/ai_eval/backends/mock.py 的独立导出版，仅将 上游项目 侧
-# framework/models/backend.py 的 import 改为本地 AIQE/protocol.py，逻辑逐行一致。
 
 from __future__ import annotations
 

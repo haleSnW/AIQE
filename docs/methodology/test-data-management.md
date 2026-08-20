@@ -1,3 +1,5 @@
+[简体中文](test-data-management.md) | [English](test-data-management.en.md)
+
 # 测试数据管理（Test Data Management）
 
 > 用例集、基线、报告是评估体系的**三类资产**，各自的存放、版本化、

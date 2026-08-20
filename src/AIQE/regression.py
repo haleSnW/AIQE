@@ -1,11 +1,11 @@
-# AIQE/regression.py —— RegressionAnalyzer（独立版）
+# AIQE/regression.py —— RegressionAnalyzer：对比历史基线，检测性能回归
 #
-# 对比当前分数与历史基线，检测性能回归。
-# 基线文件：<storage_path>/<date>.json，格式见 EvaluationReport。
-#
-# 镜像说明（协议副本说明）：本模块是 上游项目 仓库内 framework/ai_eval/regression.py
-# 的独立导出版。唯一导出差异：默认存储路径由 上游项目 专用目录改为 ~/.AIQE/results
-# （开源版不写用户 上游项目 目录）；判定规则与阈值逐字一致。
+# 基线文件：<storage_path>/baseline.json，格式见 EvaluationReport。
+# 判定规则与阈值：
+#   - 无基线文件            → status="new", delta=0.0
+#   - score 提升             → status="pass"
+#   - score 下降 > 0.15      → status="regression"
+#   - score 下降 ≤ 0.15      → status="degraded"
 
 from __future__ import annotations
 

@@ -1,10 +1,11 @@
-# AIQE/backends/ —— 评估后端抽象层（独立版）
-#
-# 镜像说明（协议副本说明）：本包是 上游项目 仓库内 framework/ai_eval/backends/
-# 的独立导出版，仅将跨包 import 改为 AIQE.protocol 本地副本，逻辑逐行一致。
+# AIQE/backends/ —— 评估后端抽象层
 #
 # 位于 ExecutionRunner 与具体推理后端之间。
 # ExecutionRunner 只依赖 Backend Protocol，本层提供评估专用生命周期管理。
+# base.py      EvaluationBackend Protocol（Backend 超集 + setup/teardown）
+# mock.py      MockEvalBackend：确定性 mock（默认，零依赖零网络）
+# mlx.py       MlxEvalBackend：真实 MLX 推理骨架（需自行注入适配层）
+# factory.py   create_eval_backend()：按 MLX_EVAL_LIVE 环境变量切换
 
 from __future__ import annotations
 

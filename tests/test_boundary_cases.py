@@ -1,7 +1,6 @@
-"""AIQE 边界用例 —— 镜像契约测试（补充）
+"""AIQE 边界用例 —— 契约测试（补充）
 
-上游项目 仓库内边界用例（boundary_cases.py）没有独立测试文件；本文件是导出
-时补上的轻量契约测试，规则与 test_extended_cases.py 完全同源：
+boundary_cases.py 的轻量契约测试，规则与 test_extended_cases.py 同源：
 - 8 个边界用例字段完整、类别合法（复用既有类别）
 - id 与 test_cases / extended_cases 两套用例都不重复
 - 在 mock 后端下可跑通 judge（评分合法、不崩溃）

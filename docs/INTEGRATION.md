@@ -1,8 +1,9 @@
+[简体中文](INTEGRATION.md) | [English](INTEGRATION.en.md)
+
 # 与开发 harness 同步使用（INTEGRATION）
 
 > 把 AIQE 接进你现有工程的三件事：目录怎么摆、CI 怎么接、基线怎么管。
-> 外加与开发 harness 的同步模式、一条完整的「换模型评估五步流程」，
-> 以及和上游项目的关系说明。
+> 外加与开发 harness 的同步模式、一条完整的「换模型评估五步流程」。
 
 ---
 
@@ -50,7 +51,7 @@ AIQE 不是 pytest 的替代品，两者各管一段：
 
 ```
 src/AIQE/          # 框架产品代码
-tests/             # pytest 镜像契约测试（testpaths=["tests"]，examples 不会被收集）
+tests/             # pytest 契约测试（testpaths=["tests"]，examples 不会被收集）
 examples/          # 可运行脚本：quick_score / ollama_backend / regression_compare
 docs/              # 方法论文档（testing-layers.md、本文件）
 ```
@@ -95,7 +96,7 @@ jobs:
           python -m pip install --upgrade pip
           pip install -e . pytest
 
-      - name: 代码级回归（pytest 镜像契约测试）
+      - name: 代码级回归（pytest 契约测试）
         run: python -m pytest -q
 
       - name: 模型级回归——快速跑分（mock，30 秒）
@@ -185,23 +186,20 @@ jobs:
 | 出现 regression | 拒绝或回退；若必须换，先针对性调 prompt 重测 |
 | 全量 new（无基线） | 观察期：先跑分记录，跑通稳定后再定基线 |
 
-## 6. 与上游 上游项目 的关系
+## 6. 本仓库定位与演进方式
 
-- **单向导出**：AIQE 是个人项目 上游项目 内部 AI 评估测试体系的**独立导出
-  版**——源码、用例、测试均从 上游项目 的评估模块集合导出，上游项目 本身不
-  开源。本仓库对外发布、独立演进；上游项目 的改动**不会**自动同步到这里。
-- **镜像契约**：两边的公开 API 同构，靠各自的镜像契约测试共同保障——
-  同一份断言语义在两边各自成立，任何一边的破坏都会被自己的测试抓住。
-  上游项目 侧依赖内部基础设施的两个测试（重试装饰器、熔断器集成）不属于
-  本仓库范围，未迁移；AIQE 侧对应的保障是「任意满足 Backend Protocol
-  的后端都可注入」。
-- **独立演进**：本仓库可在 Apache-2.0 下 fork/修改，包括改判分规则与
-  用例集；按 README 引用规范，修改版需声明与上游的差异（防止「改了评分
-  器却没人知道」的静默漂移）。反向的演进（本仓库的好改动回到 上游项目）
-  由个人项目内部按需吸收，不构成承诺。
-- **定位差异**：上游项目 是完整产品（含记忆/人格/路由等），AIQE 只保留
-  「用例 → 执行 → 确定性评分 → 回归 → 报告」这条评估链路——它是方法
-  论载体，不是运行时。
+- **独立发布**：AIQE 是独立分发的 Apache-2.0 参考实现（v0.1.0），对外发布、
+  独立演进，不依赖任何未公开的代码库。
+- **协议开放**：`AIQE/protocol.py` 定义唯一的后端接入契约（Backend
+  Protocol）。任何满足该协议的后端（MLX / Ollama / llama.cpp / 自研 /
+  mock）都可以注入 `ExecutionRunner`，由 `tests/test_backends.py` 的
+  契约测试保障。
+- **引用与修改**：本仓库可在 Apache-2.0 下 fork/修改，包括改判分规则与
+  用例集。派生仓库请在 README 或 LICENSE 注明来源，并在显著位置列出与
+  AIQE 的改动清单——保证社区能追溯判定规则的出处与演化，避免「改了评
+  分器却没人知道」的静默漂移。
+- **定位差异**：AIQE 只保留「用例 → 执行 → 确定性评分 → 回归 → 报告」
+  这条评估链路——它是方法论载体与可复用的评估框架，不是特定产品的运行时。
 
 ## 7. 常见问题
 

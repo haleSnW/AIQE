@@ -1,9 +1,8 @@
-# AIQE —— 测试左移框架参考实现（Apache-2.0）
+# AIQE —— 测试左移（Shift-Left）AI 评估框架参考实现（Apache-2.0）
 #
-# 设计约束（与 上游项目 导出决策一致）：
+# 设计约束：
 #   - 纯标准库实现，零运行时第三方依赖（schema 用 dataclass 而非 pydantic）
 #   - 唯一开发依赖是 pytest（测试框架）
-#   - 包名 AIQE，与 上游项目 仓库内的 framework/ai_eval 模块同构但完全独立
 
 [build-system]
 requires = ["setuptools>=61"]
@@ -28,6 +27,11 @@ classifiers = [
 # 运行时零依赖：纯标准库
 dependencies = []
 
+[project.urls]
+Homepage = "https://github.com/haleSnW/AIQE"
+Source = "https://github.com/haleSnW/AIQE"
+"Bug Tracker" = "https://github.com/haleSnW/AIQE/issues"
+
 [project.optional-dependencies]
 dev = ["pytest>=7"]
 
@@ -37,7 +41,7 @@ where = ["src"]
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 pythonpath = ["src"]
-# 与 上游项目 侧一致的收集告警过滤（schema 中的 TestCase 类会被 pytest 误报）
+# 收集告警过滤（schema 中的 TestCase 类会被 pytest 误报）
 filterwarnings = [
     "ignore:.*cannot collect test class.*",
 ]

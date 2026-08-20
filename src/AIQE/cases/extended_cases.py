@@ -1,11 +1,8 @@
-# AIQE/cases/extended_cases.py —— 扩展评估用例（独立版）
+# AIQE/cases/extended_cases.py —— 扩展评估用例
 #
 # 扩展评估用例，覆盖 6 个中文场景：
 # 长文本翻译 / 情感分类(JSON 限定选项) / 摘要压缩 / 代码审查(找 bug) /
 # 多轮对话连续性 / 边界输入(全角、emoji、超长单行)。
-#
-# 镜像说明（协议副本说明）：本模块是 上游项目 仓库内
-# framework/ai_eval/cases/extended_cases.py 的独立导出版，用例内容逐字一致。
 from __future__ import annotations
 
 from AIQE.schema import TestCase

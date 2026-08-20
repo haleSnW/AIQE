@@ -1,13 +1,10 @@
-# AIQE/reporter.py —— EvaluationReport（独立版）
+# AIQE/reporter.py —— EvaluationReport：聚合用例结果，输出 JSON 报告
+# + 控制台条形图摘要。
 #
-# 聚合所有用例结果，输出 JSON 报告 + 控制台条形图摘要。
-#
-# 镜像说明（协议副本说明）：本模块是 上游项目 仓库内 framework/ai_eval/reporter.py
-# 的独立导出版。两处导出差异：
-#   1. project 标识：上游项目 → AIQE（报告 JSON 的 "project" 字段）
-#   2. 版本号：随本包版本号 0.1.0（镜像契约测试断言 project/version 与模块
-#      常量一致，两边各自成立）
-# 其余字段、摘要计算逻辑逐字一致。
+# 报告 JSON 结构：
+#   test_plan_id / generated_at / project / version / cases / summary
+# 每个 case 含 execution（响应原文、耗时、backend、error、trace_id、
+# payload_hash）、judge（评分明细）、可选 regression（回归结论）。
 
 from __future__ import annotations
 

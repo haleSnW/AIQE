@@ -1,14 +1,11 @@
-"""AIQE 评估后端抽象层 —— 镜像契约测试
+"""AIQE 评估后端抽象层 —— 契约测试
 
-镜像说明：本文件是 上游项目 仓库 tests/unit/test_ai_eval_backends.py 的镜像导出版。
-断言语义逐字照抄（MockEvalBackend 确定性/生命周期、MlxEvalBackend 骨架行为、
-create_eval_backend 环境变量切换、ExecutionRunner 集成、全链路端到端），
-仅把 import 来源从 上游项目 内部模块改为 AIQE 包。
+覆盖：MockEvalBackend 确定性/生命周期、MlxEvalBackend 骨架行为、
+create_eval_backend 环境变量切换、ExecutionRunner 集成、全链路端到端。
 
-与 上游项目 原版的一处行为差异（导出差异，非缺陷）：
-  MlxEvalBackend.setup() 在独立版中确定性抛 ImportError（原版依赖 上游项目 产品
-  代码 MlxBackend 的延迟导入，独立版不携带产品代码），因此该镜像测试断言
-  从「try/except 容忍两种结果」改为「必须抛 ImportError 且提示含 mlx」。
+行为约定（v0.1.0）：
+  MlxEvalBackend.setup() 确定性抛 ImportError（本仓库未内置 MLX 适配层），
+  因此断言为「必须抛 ImportError 且提示含 mlx」。
 
 pytest 收集时会对 TestCase 类发出 PytestCollectionWarning，已在 pyproject.toml
 中通过 filterwarnings 忽略（不影响测试结果）。
@@ -188,11 +185,7 @@ def test_mlx_backend_teardown_safe_without_setup():
 
 
 def test_mlx_backend_setup_raises_without_adapter():
-    """独立版 setup() 确定性抛 ImportError（未内置 MLX 适配层）。
-
-    【导出差异】上游项目 原版延迟导入产品代码 MlxBackend；独立版不携带产品
-    代码，因此 setup() 固定报 ImportError 且提示含 "mlx"。
-    """
+    """setup() 确定性抛 ImportError（未内置 MLX 适配层）。"""
     backend = MlxEvalBackend(model_id="nonexistent-model")
     with pytest.raises(ImportError) as exc_info:
         backend.setup()

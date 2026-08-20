@@ -1,3 +1,5 @@
+[简体中文](test-trigger-strategy.md) | [English](test-trigger-strategy.en.md)
+
 # 测试触发策略（Test Trigger Strategy）
 
 > 分层框架（testing-layers.md）回答了「测什么」，本档回答「**什么时候

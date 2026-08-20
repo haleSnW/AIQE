@@ -1,10 +1,14 @@
-# AIQE/judge.py —— OutputJudge（独立版）
+# AIQE/judge.py —— OutputJudge：确定性评分器
 #
-# 确定性评分：关键词匹配 / 长度检查 / 格式校验。
+# 评分维度：关键词匹配 / 长度检查 / 格式校验。
 # 不调用外部 LLM，不引入新依赖。
 #
-# 镜像说明（协议副本说明）：本模块是 上游项目 仓库内 framework/ai_eval/judge.py
-# 的独立导出版，仅将跨模块 import 改为包内相对导入，逻辑逐行一致。
+# 评分规则（v0.1.0）：
+#   - 空响应 → 0 分（强制零分）
+#   - 长度不足 → 关键词分 × 0.5
+#   - 格式校验（json_output / coding_task）真实计入综合分：
+#     格式分 < 1.0 时按格式分打折（完全错误 → 0 分，部分结构 → 折半）
+#   - 综合分不超过 case.scoring.relevance 上限
 
 from __future__ import annotations
 
@@ -54,11 +58,13 @@ class JudgeResult:
 class OutputJudge:
     """确定性评分器：对 ExecutionResult 做关键词 / 长度 / 格式校验。
 
-    评分 DAG（各检查独立，综合取最低加权）：
+    评分 DAG（各检查独立，乘法叠加）：
       1. empty_response   → score = 0.0（强制零分）
-      2. length_check     → 响应太短 × 0.5
-      3. keyword_check    → hits / total（核心分数）
-      4. format_check     → JSON / 代码块检测（可选加分）
+      2. keyword_check    → hits / total（核心分数）
+      3. length_check     → 响应太短 × 0.5
+      4. format_check     → JSON / 代码块检测，真实计入综合分：
+                           格式分 < 1.0 时按格式分打折
+                           （chat / translation 类恒为 1.0，不受影响）
 
     最终 score 不超过 case.scoring.relevance（尊重 per-case 评分上限）。
     """
@@ -106,15 +112,24 @@ class OutputJudge:
         metrics["keyword_hits"] = sum(1 for kw in keywords if kw in result.response)
         metrics["keyword_total"] = len(keywords)
 
-        # ── 4. 格式检查（可选）───────────────────────────────
+        # ── 4. 格式检查（真实计入综合分）────────────────────
         fmt_score = self._check_format(result.response, case.category)
         checks["format_ok"] = fmt_score >= 0.5
         metrics["format_score"] = fmt_score
+        if fmt_score < 1.0:
+            reasons.append(f"格式校验未通过（格式分 {fmt_score:.0%}）")
 
         # ── 综合评分 ─────────────────────────────────────────
+        # 基础分 = 关键词命中率；
+        # 长度不达标 × 0.5；
+        # 格式分 < 1.0（仅 json_output / coding_task 会触发）按格式分打折：
+        #   完全错误的格式（如要求 JSON 却输出纯文本）→ 0 分；
+        #   部分结构（如含花括号但解析失败）→ 折半。
+        # chat / translation 类格式分恒为 1.0，不受影响。
         score = keyword_score
         if not checks["length_ok"]:
             score *= 0.5
+        score *= fmt_score
 
         # 尊重 per-case scoring 上限
         max_score = case.scoring.relevance

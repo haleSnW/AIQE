@@ -1,10 +1,12 @@
+[简体中文](multi-agent-testing.md) | [English](multi-agent-testing.en.md)
+
 # 多 agent 测试分工与任务书模板（Multi-Agent Testing）
 
 > 质量评估交给多个 agent 协作时，靠的不是「让 agent 自觉」，而是**明确
 > 的角色边界 + 可验收的任务书**。本文档定义测试四角色分工模型、任务书
 > 模板，并附带一个可直接复用的通用测试 agent skill（`skills/testing-agent/`）。
-> 本模型取材自个人项目多智能体协作配置的实践（来源：上游项目 项目 CLAUDE.md
-> 多智能体角色分工节），表述已通用化。
+> 本模型取材自多智能体协作的常见实践（角色边界 + 可验收任务书），
+> 表述已通用化。
 
 ---
 

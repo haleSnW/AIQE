@@ -1,12 +1,9 @@
-# AIQE/backends/factory.py —— 评估后端工厂（独立版）
+# AIQE/backends/factory.py —— 评估后端工厂
 #
 # 根据 MLX_EVAL_LIVE 环境变量决定创建 mock 还是真实 MLX 后端。
 #
 #   MLX_EVAL_LIVE != "1"（默认）-> MockEvalBackend（确定性，无依赖）
 #   MLX_EVAL_LIVE == "1"         -> MlxEvalBackend（真实 MLX 推理骨架）
-#
-# 镜像说明（协议副本说明）：本模块是 上游项目 仓库内
-# framework/ai_eval/backends/factory.py 的独立导出版，逻辑逐行一致。
 
 from __future__ import annotations
 

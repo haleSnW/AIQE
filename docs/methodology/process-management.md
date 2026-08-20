@@ -1,3 +1,5 @@
+[简体中文](process-management.md) | [English](process-management.en.md)
+
 # AIQE 质量流程管理（Process Management）
 
 > AI 质量评估不是一条命令，是一条**流程**：从需求到决策，每个环节都有

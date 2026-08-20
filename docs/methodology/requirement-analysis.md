@@ -1,3 +1,5 @@
+[简体中文](requirement-analysis.md) | [English](requirement-analysis.en.md)
+
 # 需求分析分解：需求 → 验收标准 → 测试用例（Requirement Analysis）
 
 > 测试左移的起点不在用例设计，而在**需求**。模糊需求无法跑分——本

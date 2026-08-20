@@ -1,10 +1,9 @@
-# AIQE/runner.py —— ExecutionRunner（独立版）
+# AIQE/runner.py —— ExecutionRunner：通过 Backend Protocol 执行用例
 #
-# 镜像说明（协议副本说明）：本模块是 上游项目 仓库内 framework/ai_eval/runner.py
-# 的独立导出版，公开 API 同构。与原版的两处导出差异：
-#   1. ExecutionResult 由 pydantic BaseModel → 标准库 dataclass
-#   2. 对 上游项目 侧框架 models/backend.py 的引用 → 本地 AIQE/protocol.py
-# 其余行为（异常处理分支、trace_id/payload_hash 语义）与 上游项目 侧完全一致。
+# 职责：调用 backend.generate_sync() 获取原始响应，捕获耗时 / token 数 /
+# 错误状态，返回 ExecutionResult（不含评分，评分由 OutputJudge 负责）。
+# 异常处理：RuntimeError → 记录警告并返回 error 结果；
+#           其他异常 → 记录错误并返回 error 结果（execution_error 前缀）。
 
 from __future__ import annotations
 

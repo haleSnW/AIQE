@@ -1,4 +1,4 @@
-# AIQE/backends/base.py —— 评估后端抽象层（独立版）
+# AIQE/backends/base.py —— 评估后端抽象层
 #
 # 位于 ExecutionRunner 与具体推理后端（MLX/Ollama/llama.cpp/remote）之间。
 # 职责：
@@ -11,10 +11,6 @@
 #     （generate_sync / backend_type / profile / is_loaded），这样 ExecutionRunner
 #     无需任何改动即可直接使用。
 #   - 新增的 setup/teardown/name/model_id 是评估专用扩展，不污染 Backend Protocol。
-#
-# 镜像说明（协议副本说明）：上游项目 仓库内对应原模块为
-# framework/ai_eval/backends/base.py，仅 import 来源由 上游项目 侧
-# framework/models/backend.py 改为本地 AIQE/protocol.py（协议副本说明）。
 
 from __future__ import annotations
 
