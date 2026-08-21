@@ -11,17 +11,31 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "AIQE"
 version = "0.1.0"
-description = "测试左移（Shift-Left）AI 评估框架参考实现：在生成前先跑分，用确定性评分拦截模型质量回归"
+description = "AIQE — a shift-left AI quality evaluation framework: deterministic scoring and regression testing for LLM applications and AI agents before deployment (测试左移 AI 质量评估框架参考实现)"
 readme = "README.md"
 requires-python = ">=3.10"
 license = { text = "Apache-2.0" }
 authors = [{ name = "halewong" }]
-keywords = ["ai-evaluation", "shift-left", "testing", "llm", "quality-engineering"]
+keywords = [
+    "aiqe",
+    "ai-evaluation",
+    "llm-evaluation",
+    "llm-testing",
+    "agent-testing",
+    "shift-left",
+    "quality-engineering",
+    "regression-testing",
+]
 classifiers = [
     "Development Status :: 3 - Alpha",
     "Intended Audience :: Developers",
     "License :: OSI Approved :: Apache Software License",
+    "Operating System :: OS Independent",
     "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Software Development :: Quality Assurance",
     "Topic :: Software Development :: Testing",
 ]
 # 运行时零依赖：纯标准库

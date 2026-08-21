@@ -1,0 +1,209 @@
+{
+  "test_plan_id": "quick-score",
+  "generated_at": "2026-08-21T12:35:39.314659+00:00",
+  "project": "AIQE",
+  "version": "0.1.0",
+  "cases": [
+    {
+      "case_id": "simple_chat",
+      "category": "chat",
+      "prompt": "你好，请用一句话介绍你自己。",
+      "execution": {
+        "response": "你好！我是一个运行在本地的 AI 助手，使用 MLX 框架提供推理能力。",
+        "tokens_generated": 18,
+        "elapsed_sec": 0.1,
+        "tok_per_sec": 15.0,
+        "backend": "mlx",
+        "model_id": "quick-score-mock",
+        "error": null,
+        "trace_id": "02b52cde",
+        "payload_hash": "490ae3fda2962d54"
+      },
+      "judge": {
+        "score": 1.0,
+        "passed": true,
+        "breakdown": {
+          "relevance": 1.0,
+          "correctness": 1.0,
+          "completeness": 1.0,
+          "formatting": 1.0,
+          "confidence": 1.0
+        },
+        "checks": {
+          "empty_response": false,
+          "length_ok": true,
+          "keywords_match": true,
+          "format_ok": true
+        },
+        "reasons": [
+          "关键词命中 2/2（100%）"
+        ],
+        "metrics": {
+          "response_length": 36,
+          "keyword_hits": 2,
+          "keyword_total": 2,
+          "format_score": 1.0
+        }
+      },
+      "regression": {
+        "case_id": "simple_chat",
+        "status": "new",
+        "delta": 0.0,
+        "baseline_score": null,
+        "current_score": 1.0
+      }
+    },
+    {
+      "case_id": "long_translation",
+      "category": "translation",
+      "prompt": "请将以下中文翻译为英文：\n人工智能是计算机科学的一个分支，它企图了解智能的实质，并生产出一种新的能以人类智能相似的方式做出反应的智能机器。",
+      "execution": {
+        "response": "Artificial intelligence is a branch of computer science that aims to understand the essence of intelligence and produce intelligent machines.",
+        "tokens_generated": 70,
+        "elapsed_sec": 0.1,
+        "tok_per_sec": 15.0,
+        "backend": "mlx",
+        "model_id": "quick-score-mock",
+        "error": null,
+        "trace_id": "cd7c5745",
+        "payload_hash": "c6967d60324d87e3"
+      },
+      "judge": {
+        "score": 0.6667,
+        "passed": true,
+        "breakdown": {
+          "relevance": 1.0,
+          "correctness": 1.0,
+          "completeness": 1.0,
+          "formatting": 1.0,
+          "confidence": 1.0
+        },
+        "checks": {
+          "empty_response": false,
+          "length_ok": true,
+          "keywords_match": true,
+          "format_ok": true
+        },
+        "reasons": [
+          "关键词命中 2/3（67%）"
+        ],
+        "metrics": {
+          "response_length": 141,
+          "keyword_hits": 2,
+          "keyword_total": 3,
+          "format_score": 1.0
+        }
+      },
+      "regression": {
+        "case_id": "long_translation",
+        "status": "new",
+        "delta": 0.0,
+        "baseline_score": null,
+        "current_score": 0.6667
+      }
+    },
+    {
+      "case_id": "json_output",
+      "category": "json_output",
+      "prompt": "以JSON格式输出一行：{\"name\": \"AI\", \"type\": \"assistant\"}",
+      "execution": {
+        "response": "{\"name\": \"AI\", \"type\": \"assistant\", \"version\": \"0.1.0\"}",
+        "tokens_generated": 27,
+        "elapsed_sec": 0.1,
+        "tok_per_sec": 15.0,
+        "backend": "mlx",
+        "model_id": "quick-score-mock",
+        "error": null,
+        "trace_id": "07180b6a",
+        "payload_hash": "383d7ea0a01fc8ad"
+      },
+      "judge": {
+        "score": 1.0,
+        "passed": true,
+        "breakdown": {
+          "relevance": 1.0,
+          "correctness": 1.0,
+          "completeness": 1.0,
+          "formatting": 1.0,
+          "confidence": 1.0
+        },
+        "checks": {
+          "empty_response": false,
+          "length_ok": true,
+          "keywords_match": true,
+          "format_ok": true
+        },
+        "reasons": [
+          "关键词命中 3/3（100%）"
+        ],
+        "metrics": {
+          "response_length": 55,
+          "keyword_hits": 3,
+          "keyword_total": 3,
+          "format_score": 1.0
+        }
+      },
+      "regression": {
+        "case_id": "json_output",
+        "status": "new",
+        "delta": 0.0,
+        "baseline_score": null,
+        "current_score": 1.0
+      }
+    },
+    {
+      "case_id": "coding_task",
+      "category": "coding_task",
+      "prompt": "写一个Python快速排序函数，函数名为 quick_sort",
+      "execution": {
+        "response": "def quick_sort(arr):\n    if len(arr) <= 1:\n        return arr\n    pivot = arr[len(arr) // 2]\n    left = [x for x in arr if x < pivot]\n    middle = [x for x in arr if x == pivot]\n    right = [x for x in arr if x > pivot]\n    return quick_sort(left) + middle + quick_sort(right)\n",
+        "tokens_generated": 138,
+        "elapsed_sec": 0.1,
+        "tok_per_sec": 15.0,
+        "backend": "mlx",
+        "model_id": "quick-score-mock",
+        "error": null,
+        "trace_id": "78370bb6",
+        "payload_hash": "518683aede25665f"
+      },
+      "judge": {
+        "score": 0.9,
+        "passed": true,
+        "breakdown": {
+          "relevance": 0.9,
+          "correctness": 0.9,
+          "completeness": 0.8,
+          "formatting": 0.9,
+          "confidence": 0.95
+        },
+        "checks": {
+          "empty_response": false,
+          "length_ok": true,
+          "keywords_match": true,
+          "format_ok": true
+        },
+        "reasons": [
+          "关键词命中 3/3（100%）"
+        ],
+        "metrics": {
+          "response_length": 276,
+          "keyword_hits": 3,
+          "keyword_total": 3,
+          "format_score": 1.0
+        }
+      },
+      "regression": {
+        "case_id": "coding_task",
+        "status": "new",
+        "delta": 0.0,
+        "baseline_score": null,
+        "current_score": 0.9
+      }
+    }
+  ],
+  "summary": {
+    "passed": 4,
+    "total": 4,
+    "regressions": []
+  }
+}
