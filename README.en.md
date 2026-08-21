@@ -4,6 +4,11 @@
 
 [简体中文](README.md) | [English](README.en.md)
 
+> **What is AIQE in one sentence**: an open-source **shift-left framework for
+> quality evaluation of LLM applications and AI agents** — run deterministic
+> scoring and regression tests *before* production deployment, so model quality
+> regressions are caught pre-release.
+
 AIQE is a reference implementation of a quality evaluation framework for **LLM
 and agent development, and AI product development**: **test cases → execution
 (Backend Protocol) → deterministic scoring → regression comparison → JSON
@@ -27,18 +32,23 @@ pipeline applies.
 
 ## Table of Contents
 
-1. [Backend Support Matrix](#backend-support-matrix)
-2. [The Shift-Left Idea: Why Score Before Generating](#2-the-shift-left-idea-why-score-before-generating)
-3. [Who It's For: AIQE by Product Shape](#3-who-its-for-aiqe-by-product-shape)
-4. [Quick Start: Mock Backend, Report in 30 Seconds](#4-quick-start-mock-backend-report-in-30-seconds)
-5. [Repository Structure](#5-repository-structure)
-6. [Methodology Docs: Layers, Process, Collaboration, Triggers](#6-methodology-docs-layers-process-collaboration-triggers)
-7. [Using AIQE with Your Dev Harness: pytest, CI, Baselines, Model Swap](#7-using-aiqe-with-your-dev-harness-pytest-ci-baselines-model-swap)
-8. [Examples: Ollama Integration and Regression Comparison](#8-examples-ollama-integration-and-regression-comparison)
-9. [Test Trigger Strategy: Four Tiers × Auto/Manual](#9-test-trigger-strategy-four-tiers--automanual)
-10. [Templates and Companion Skills](#10-templates-and-companion-skills)
-11. [License](#11-license)
-12. [Donation and Support (last section)](#12-donation-and-support)
+- [AIQE — A Shift-Left AI Quality Evaluation Framework (Reference Implementation)](#aiqe--a-shift-left-ai-quality-evaluation-framework-reference-implementation)
+  - [Table of Contents](#table-of-contents)
+  - [Backend Support Matrix](#backend-support-matrix)
+  - [2. The Shift-Left Idea: Why Score Before Generating](#2-the-shift-left-idea-why-score-before-generating)
+  - [3. Who It's For: AIQE by Product Shape](#3-who-its-for-aiqe-by-product-shape)
+  - [4. AIQE vs Other LLM Evaluation Frameworks](#4-aiqe-vs-other-llm-evaluation-frameworks)
+  - [5. Quick Start: Mock Backend, Report in 30 Seconds](#5-quick-start-mock-backend-report-in-30-seconds)
+  - [6. Repository Structure](#6-repository-structure)
+  - [7. Methodology Docs: Layers, Process, Collaboration, Triggers](#7-methodology-docs-layers-process-collaboration-triggers)
+  - [8. Using AIQE with Your Dev Harness: pytest, CI, Baselines, Model Swap](#8-using-aiqe-with-your-dev-harness-pytest-ci-baselines-model-swap)
+  - [9. Examples: Ollama Integration and Regression Comparison](#9-examples-ollama-integration-and-regression-comparison)
+  - [10. Test Trigger Strategy: Four Tiers × Auto/Manual](#10-test-trigger-strategy-four-tiers--automanual)
+  - [11. Templates and Companion Skills](#11-templates-and-companion-skills)
+  - [12. License](#12-license)
+  - [13. Donation and Support](#13-donation-and-support)
+  - [FAQ](#faq)
+  - [About the Author](#about-the-author)
 
 ---
 
@@ -98,8 +108,9 @@ during development:
 
 1. **Deterministic scoring, no LLM judge**: OutputJudge only performs
    reproducible checks — keyword hits, length checks, format validation (plus
-   optional JSON/code-structure detection). The same response always gets the
-   same score — so scores can feed baselines and regression analysis.
+   optional JSON/code-structure detection). The current mock-backend scoring
+   flow is deterministic: the same input produces a consistent result — so
+   scores can feed baselines and regression analysis.
 2. **Cases are assets**: the case sets (including 8 boundary scenarios:
    oversized inputs, adversarial prompts, conflicting instructions, numeric
    precision, etc.) encode your product expectations. Swap a model → run the
@@ -122,8 +133,8 @@ for any AI product; the difference is only **what your cases encode**:
 
 | What you evaluate | How to use AIQE |
 |---|---|
-| System/OS (incl. agent runtime) | Agent decision-path evaluation: encode "was the decision correct" as cases (expected keywords/format/length); scores are decision-quality regression |
-| Model (large / on-device) | Scoring and swap regression: full case set against baseline; the five-step flow (see §7) decides keep vs. swap |
+| System/OS (incl. agent runtime) | Encode expected Agent decision behaviors as test cases to validate workflow output quality and regression stability |
+| Model (large / on-device) | Scoring and swap regression: full case set against baseline; the five-step flow (see §8) decides keep vs. swap |
 | Algorithm (RAG/routing/ranking/post-processing) | Deterministic-output regression: same input must produce same-quality output; score change is an alert |
 | APK/Web product | Product-function cases (incl. UI output assertions): encode acceptance criteria as cases, pass the exam before release |
 | Generic (any AI feature) | CI gate alongside your dev harness: auto-run relevant cases on every build/change; scores and regression results are quality signals |
@@ -132,9 +143,43 @@ The relative value of the 12 test layers differs by product shape — see the
 "适用产品形态 / product shapes" column in the overview table of
 [docs/methodology/testing-layers.md](docs/methodology/testing-layers.md).
 
+**By role:**
+
+| Role | How to use AIQE |
+|---|---|
+| AI application teams | Encode acceptance criteria as cases; auto-score on every build/change as a pre-release quality gate |
+| Agent developers | Encode expected Agent decision behaviors as test cases to validate workflow output quality and regression stability |
+| QA engineers | Turn "is the model good enough" from subjective spot checks into deterministic metrics — cases as assets, baselines as gates — using the methodology docs to build a complete LLM evaluation practice |
+| Researchers | Compare models / prompts / parameter variants on the same case set: scores are conclusions, benchmarks are reproducible |
+
 ---
 
-## 4. Quick Start: Mock Backend, Report in 30 Seconds
+## 4. AIQE vs Other LLM Evaluation Frameworks
+
+AIQE is not a replacement for any existing evaluation tool — it targets the
+specific problem of a **pre-release, offline, deterministic quality gate**. The
+table below states only the typical design differences per each project's public
+documentation; no superiority claims are made (refer to each project's latest
+docs for current capabilities):
+
+| Dimension | **AIQE** | DeepEval | Promptfoo | LangSmith | Ragas |
+|---|---|---|---|---|---|
+| Focus | Pre-release deterministic quality gate | LLM evaluation metrics framework | Prompt testing & red-teaming | Observability + evaluation SaaS | RAG evaluation metrics |
+| Scoring | Deterministic rules: keyword / length / format (no LLM judge) | Primarily LLM-judge metrics (e.g., G-Eval) | Assertions + LLM evaluation mixed | In-platform evaluation & tracing | Primarily LLM-judge metrics |
+| Operation | Pure standard library, zero dependencies, fully offline | Typically requires LLM API calls | Standalone CLI / library; provider-based | Cloud platform + SDK | Typically requires LLM calls |
+| Local models | Any Backend Protocol injection; ships an Ollama example and an MLX skeleton | Depends on provider | Supports local providers | Limited | Depends on the LLM used |
+| Integration | Python library + runnable examples + CI workflow | Python / pytest | CLI + YAML config | Platform + SDK | Python library |
+| Open source / commercial | Apache-2.0 open-source reference implementation | Open source | Open source | Commercial (free tier) | Open source |
+
+**How to choose**: for LLM-judge metrics (DeepEval / Ragas), prompt & red-team
+testing (Promptfoo), or production observability (LangSmith), use those tools;
+for a zero-cost, offline, CI-friendly deterministic gate on every build or model
+swap, use AIQE. They can be combined — e.g., AIQE as the pre-release gate,
+LangSmith for production observability.
+
+---
+
+## 5. Quick Start: Mock Backend, Report in 30 Seconds
 
 No model, no network required. The default mock backend returns deterministic
 responses based on prompt content (JSON / code / translation / Chinese chat),
@@ -185,7 +230,7 @@ runner = ExecutionRunner(backend)    # downstream judge/regression/reporter unch
 
 ---
 
-## 5. Repository Structure
+## 6. Repository Structure
 
 ```
 src/AIQE/
@@ -249,11 +294,11 @@ Data flow: `TestCase → ExecutionRunner(Backend) → ExecutionResult → Output
 > - [templates/](templates/) — case template / runnable script skeleton / five-section report template
 > - [skills/](skills/) — testing-agent discipline skill + four-tier manual trigger skill
 > - [examples/](examples/) — runnable examples: quick mock scoring / real ollama integration /
->   two-run regression comparison (see §8)
+>   two-run regression comparison (see §9)
 
 ---
 
-## 6. Methodology Docs: Layers, Process, Collaboration, Triggers
+## 7. Methodology Docs: Layers, Process, Collaboration, Triggers
 
 All methodology docs live in `docs/methodology/`, covering the full chain of
 "what to test → how to set standards → who does what → when to trigger → where
@@ -270,9 +315,9 @@ data lives → how to report":
 | [report-generation.md](docs/methodology/report-generation.md) | report pipeline, field-by-field explanations + extended Markdown example | "how to report" |
 
 Integration guidance (pytest coexistence / CI / baseline SOP / five-step model
-swap) is in §7.
+swap) is in §8.
 
-## 7. Using AIQE with Your Dev Harness: pytest, CI, Baselines, Model Swap
+## 8. Using AIQE with Your Dev Harness: pytest, CI, Baselines, Model Swap
 
 [docs/INTEGRATION.md](docs/INTEGRATION.md) answers "how do I wire AIQE into my
 project": the sync pattern with your dev harness (auto-score on every
@@ -285,7 +330,7 @@ decide).
 This repo ships `.github/workflows/test.yml`: anyone who clones it gets a single
 CI run validating AIQE on Python 3.10 / 3.11 / 3.12 (install + full test suite).
 
-## 8. Examples: Ollama Integration and Regression Comparison
+## 9. Examples: Ollama Integration and Regression Comparison
 
 | Example | Purpose | Run |
 |---|---|---|
@@ -293,7 +338,7 @@ CI run validating AIQE on Python 3.10 / 3.11 / 3.12 (install + full test suite).
 | [examples/ollama_backend.py](examples/ollama_backend.py) | score against a real local ollama model (with Chinese hints when the model isn't ready) | `ollama pull llama3.2` first, then `python examples/ollama_backend.py` |
 | [examples/regression_compare.py](examples/regression_compare.py) | two-run regression comparison: generate baseline → re-run with changed params → regression verdict (mock, offline-capable) | `python examples/regression_compare.py --degrade` |
 
-## 9. Test Trigger Strategy: Four Tiers × Auto/Manual
+## 10. Test Trigger Strategy: Four Tiers × Auto/Manual
 
 [docs/methodology/test-trigger-strategy.md](docs/methodology/test-trigger-strategy.md)
 defines four test tiers (smoke / full / regression / acceptance) mapped onto
@@ -304,7 +349,7 @@ be triggered manually, with the matching commands (see
 [skills/aiqe-testing/](skills/aiqe-testing/SKILL.md): /aiqe-smoke, /aiqe-full,
 /aiqe-regression, /aiqe-acceptance).
 
-## 10. Templates and Companion Skills
+## 11. Templates and Companion Skills
 
 - [templates/test-case-template.md](templates/test-case-template.md)
   — field-by-field TestCase guide + good/bad case comparison
@@ -319,7 +364,7 @@ be triggered manually, with the matching commands (see
 
 ---
 
-## 11. License
+## 12. License
 
 This project is licensed under the **Apache License 2.0** (full text in
 [LICENSE](LICENSE)). Why this license:
@@ -346,7 +391,7 @@ This project is licensed under the **Apache License 2.0** (full text in
 
 ---
 
-## 12. Donation and Support
+## 13. Donation and Support
 
 AIQE is a fully open-source, free-to-use project. If you find it useful,
 consider supporting its development and maintenance. Every contribution is
@@ -368,3 +413,111 @@ for exactly three things:
 </div>
 
 Whatever the amount — thank you for supporting open source. ❤️
+
+
+## FAQ
+
+**What is AIQE?**
+
+AIQE is an open-source, shift-left AI quality evaluation framework: before LLM
+applications and AI agents go into production, it runs deterministic scoring and
+regression tests on model outputs. It provides a complete pipeline — test cases
+→ execution (Backend Protocol) → deterministic scoring → regression comparison →
+JSON report — with a pure standard-library implementation, zero runtime
+dependencies, and Apache-2.0 open-source licensing.
+
+**What problem does AIQE solve?**
+
+Model quality regressions are discovered too late — after release, via user
+feedback and manual spot checks, with feedback loops measured in days or weeks
+and no attribution. AIQE moves evaluation before release: every build, every
+prompt change, every model swap runs the same case set against the same
+baseline; a score drop triggers investigation or blocks release.
+
+**Who should use AIQE?**
+
+LLM / agent application developers, QA engineers, AI application product teams,
+and researchers — any team that needs deterministic quality evaluation and
+regression testing for AI systems before deployment (see §3 "By role").
+
+**Why test AI systems before deployment?**
+
+The later a defect is found, the more it costs to fix. For AI systems, "feel"
+can't be quantified or attributed; only pre-deployment scoring, baselines, and
+regression comparison turn quality changes into numbers and gates.
+
+**Can AIQE evaluate local models?**
+
+Yes. The evaluation pipeline is not bound to any model — any backend satisfying
+the `AIQE.protocol.Backend` contract can be injected, including local models.
+The repo ships an Ollama integration example and an MLX skeleton, and any
+inference service such as llama.cpp can be plugged in through the protocol — no
+cloud API required.
+
+**Does AIQE support Ollama?**
+
+Yes. `examples/ollama_backend.py` is the official integration example
+(experimental): run `ollama pull llama3.2` first, then run the example script to
+score a local model.
+
+**How does AIQE compare with DeepEval / Promptfoo / LangSmith?**
+
+They solve different problems: DeepEval / Ragas provide LLM-judge metrics,
+Promptfoo focuses on prompt testing and red-teaming, LangSmith is a production
+observability platform; AIQE focuses on a "pre-release, offline, deterministic"
+quality gate — no LLM judge, no network, zero dependencies, reports in 30
+seconds. See §4 for the full comparison.
+
+**Does AIQE support AI agent testing?**
+
+Yes. The pipeline is product-shape agnostic: encode expected Agent decision
+behaviors as test cases (expected keywords / format / length) to validate
+workflow output quality and regression stability. The methodology docs
+(docs/methodology/) cover agent testing roles, triggers, and data management.
+
+**Do I need an API key or network access?**
+
+No. The default mock backend is fully offline with deterministic output, ready
+to use out of the box; only when integrating a real model do you need a local
+model service (Ollama / MLX) or your own backend.
+
+**How long does one evaluation take?**
+
+With the mock backend, a full report in under 30 seconds (4 cases + scoring +
+regression + JSON); with a real model it depends on backend speed and case
+count.
+
+**Are AIQE's tests trustworthy?**
+
+The repo ships 111 contract tests (all green with `pytest -q`) covering
+protocol, scoring, regression, error contracts, and format regressions; the
+current mock-backend scoring flow is deterministic: the same input produces a
+consistent result.
+
+**Is AIQE a commercial product?**
+
+No. AIQE is an Apache-2.0 open-source reference implementation with zero runtime
+dependencies — free to use, fork, and commercialize (including closed source).
+
+
+## About the Author
+
+AIQE was created by haleSnW, an independent developer.
+
+With years of experience in software testing, quality engineering, and
+automation, the author now focuses on AI application testing, AI agent
+evaluation, and model reliability validation.
+
+If your team is exploring:
+
+- AI application quality systems
+- LLM / Agent testing frameworks
+- Automated quality engineering platforms
+- AI engineering reliability assurance
+
+Technical exchange and collaboration are welcome.
+
+Contact:
+
+- GitHub: @haleSnW
+- Email: halewon@outlook.com
