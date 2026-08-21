@@ -194,20 +194,25 @@ python3 -m venv .venv
 .venv/bin/python examples/quick_score.py
 ```
 
-Example output (excerpt):
+Example output (excerpt — captured from a real run of the mock backend;
+full capture: [examples/demo/terminal_output.md](examples/demo/terminal_output.md)):
 
 ```
   AIQE Evaluation Report
-  AIQE v0.1.0 · 2026-08-15T...
+  AIQE v0.1.0 · 2026-08-21T…
 ════════════════════════════════════════════
-  simple_chat         █████████░  0.90  ✓
-  long_translation    ██████████  1.00  ✓
-  json_output         ██████████  1.00  ✓
-  coding_task         █████████░  0.90  ✓
+
+  simple_chat          ██████████  1.00  ✓
+  long_translation     ███████░░░  0.67  ✓
+  json_output          ██████████  1.00  ✓
+  coding_task          █████████░  0.90  ✓
 
   Summary: 4/4 passed
 ════════════════════════════════════════════
 ```
+
+**Run the demo evidence locally** — the full real-run evidence (report JSON +
+terminal capture) lives in [examples/demo/](examples/demo/README.md).
 
 Run the full test suite:
 
@@ -258,6 +263,7 @@ examples/
     quick_score.py           # 30-second quick scoring example (mock)
     ollama_backend.py        # real-model integration example (ollama)
     regression_compare.py    # two-run regression comparison demo (mock, offline)
+    demo/                    # real-run demo evidence: report JSON + terminal capture (mock, offline)
 docs/
     methodology/                 # methodology docs (layers/process/collab/requirements/data/report/triggers)
     INTEGRATION.md               # using AIQE with your dev harness
@@ -294,7 +300,7 @@ Data flow: `TestCase → ExecutionRunner(Backend) → ExecutionResult → Output
 > - [templates/](templates/) — case template / runnable script skeleton / five-section report template
 > - [skills/](skills/) — testing-agent discipline skill + four-tier manual trigger skill
 > - [examples/](examples/) — runnable examples: quick mock scoring / real ollama integration /
->   two-run regression comparison (see §9)
+>   two-run regression comparison / real-run demo evidence (see §9)
 
 ---
 
@@ -334,6 +340,7 @@ CI run validating AIQE on Python 3.10 / 3.11 / 3.12 (install + full test suite).
 
 | Example | Purpose | Run |
 |---|---|---|
+| [examples/demo/](examples/demo/README.md) | real-run demo evidence: report JSON + terminal output (all captured from actual mock-backend executions) | `python examples/quick_score.py`, see the demo README |
 | [examples/quick_score.py](examples/quick_score.py) | 30-second quick scoring (mock, zero deps) | `python examples/quick_score.py` |
 | [examples/ollama_backend.py](examples/ollama_backend.py) | score against a real local ollama model (with Chinese hints when the model isn't ready) | `ollama pull llama3.2` first, then `python examples/ollama_backend.py` |
 | [examples/regression_compare.py](examples/regression_compare.py) | two-run regression comparison: generate baseline → re-run with changed params → regression verdict (mock, offline-capable) | `python examples/regression_compare.py --degrade` |

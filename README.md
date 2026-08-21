@@ -177,20 +177,25 @@ python3 -m venv .venv
 .venv/bin/python examples/quick_score.py
 ```
 
-示例输出（节选）：
+示例输出（节选；mock 后端真实运行捕获，完整版见
+[examples/demo/terminal_output.md](examples/demo/terminal_output.md)）：
 
 ```
   AIQE Evaluation Report
-  AIQE v0.1.0 · 2026-08-15T...
+  AIQE v0.1.0 · 2026-08-21T…
 ════════════════════════════════════════════
-  simple_chat         █████████░  0.90  ✓
-  long_translation    ██████████  1.00  ✓
-  json_output         ██████████  1.00  ✓
-  coding_task         █████████░  0.90  ✓
+
+  simple_chat          ██████████  1.00  ✓
+  long_translation     ███████░░░  0.67  ✓
+  json_output          ██████████  1.00  ✓
+  coding_task          █████████░  0.90  ✓
 
   Summary: 4/4 passed
 ════════════════════════════════════════════
 ```
+
+**Run the demo evidence locally**：在本地复现完整的真实运行证据（报告 JSON +
+终端输出），见 [examples/demo/](examples/demo/README.md)。
 
 跑全部测试：
 
@@ -240,6 +245,7 @@ examples/
     quick_score.py           # 30 秒快速跑分示例（mock）
     ollama_backend.py        # ollama 真实模型接入示例
     regression_compare.py    # 两次跑分回归对比演示（mock 离线）
+    demo/                    # 真实运行演示证据：报告 JSON + 终端输出（mock 离线）
 docs/
     methodology/                 # 方法论文档（分层/流程/协作/需求/数据/报告/触发）
     INTEGRATION.md               # 与开发 harness 同步使用
@@ -276,7 +282,8 @@ skills/
 > - [templates/](templates/) — 用例模板 / 可运行脚本骨架 / 五段式报告模板
 > - [skills/](skills/) — 测试 agent 纪律 skill + 四档手动触发 skill
 > - [examples/](examples/) — 可运行示例集：mock 快速跑分 / ollama 真实接入 /
->   两次跑分回归对比（详见第 9 节）
+>   两次跑分回归对比 / 真实运行演示证据（[examples/demo/](examples/demo/README.md)，
+>   详见第 9 节）
 
 ---
 
@@ -312,6 +319,7 @@ skills/
 
 | 示例 | 用途 | 运行 |
 |---|---|---|
+| [examples/demo/](examples/demo/README.md) | 真实运行演示证据：报告 JSON + 终端输出（全部来自 mock 后端实际执行） | `python examples/quick_score.py`，详见 demo 内 README |
 | [examples/quick_score.py](examples/quick_score.py) | 30 秒快速跑分（mock，零依赖） | `python examples/quick_score.py` |
 | [examples/ollama_backend.py](examples/ollama_backend.py) | 接入本地 ollama 真实模型跑分（含模型未就绪中文提示） | 先 `ollama pull llama3.2`，再 `python examples/ollama_backend.py` |
 | [examples/regression_compare.py](examples/regression_compare.py) | 两次跑分回归对比：生成基线 → 改参数再跑 → 回归结论（mock 可离线） | `python examples/regression_compare.py --degrade` |
