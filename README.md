@@ -490,3 +490,4 @@ AIQE 由独立开发者 haleSnW 创建。
 
 - GitHub: @haleSnW
 - Email: halewon@outlook.com
+- 创作主页：[HaleSona · 爱发电](https://afdian.com/a/2846579h)
