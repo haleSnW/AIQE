@@ -1,0 +1,107 @@
+{
+  "test_plan_id": "synthetic-fixture",
+  "generated_at": "2026-09-22T00:00:00+00:00",
+  "project": "AIQE",
+  "version": "0.1.0",
+  "cases": [
+    {
+      "case_id": "alpha",
+      "category": "chat",
+      "prompt": "你好，请用一句话介绍你自己。",
+      "execution": {
+        "response": "你好！我是一个合成样本中的 AI 助手。",
+        "tokens_generated": 12,
+        "elapsed_sec": 0.12,
+        "tok_per_sec": 100.0,
+        "backend": "mock",
+        "model_id": "demo-model-a",
+        "error": null,
+        "trace_id": "c0000001",
+        "payload_hash": "3a1fb63f0d3e765c"
+      },
+      "judge": {
+        "score": 0.95,
+        "passed": true,
+        "breakdown": {
+          "relevance": 1.0,
+          "correctness": 1.0,
+          "completeness": 1.0,
+          "formatting": 1.0,
+          "confidence": 1.0
+        },
+        "checks": {
+          "empty_response": false,
+          "length_ok": true,
+          "keywords_match": true,
+          "format_ok": true
+        },
+        "reasons": [
+          "关键词命中 2/2（100%）"
+        ],
+        "metrics": {
+          "response_length": 18,
+          "keyword_hits": 2,
+          "keyword_total": 2,
+          "format_score": 1.0
+        }
+      }
+    },
+    {
+      "case_id": "beta",
+      "category": "chat",
+      "prompt": "你好，请用一句话介绍你自己。",
+      "execution": {
+        "response": "",
+        "tokens_generated": 0,
+        "elapsed_sec": 0.0,
+        "tok_per_sec": 0.0,
+        "backend": "mock",
+        "model_id": "demo-model-a",
+        "error": "execution_error: 模型未加载，请先调用 setup()",
+        "trace_id": "c0000002",
+        "payload_hash": "d41d8cd98f00b204"
+      },
+      "judge": {
+        "score": 0.0,
+        "passed": false,
+        "breakdown": {
+          "relevance": 1.0,
+          "correctness": 1.0,
+          "completeness": 1.0,
+          "formatting": 1.0,
+          "confidence": 1.0
+        },
+        "checks": {
+          "empty_response": true
+        },
+        "reasons": [
+          "响应为空"
+        ],
+        "metrics": {}
+      }
+    }
+  ],
+  "summary": {
+    "passed": 1,
+    "total": 2,
+    "regressions": []
+  },
+  "schema_version": "aiqe.result/0.1.0",
+  "metadata": {
+    "run_id": "synth-run-c",
+    "created_at": "2026-09-22T00:00:00+00:00",
+    "dataset_id": "aiqe-demo",
+    "dataset_version": "1.0.0",
+    "judge_id": "aiqe.deterministic-judge",
+    "judge_version": "0.1.0",
+    "model_id": "demo-model-a",
+    "backend_id": "mock",
+    "source_type": "synthetic",
+    "data_classification": "public_synthetic",
+    "generator": "aiqe.synthetic/0.1.0",
+    "generator_version": "0.1.0",
+    "content_digest": "7a1025dbfbd4a50d918e17aeaa9ee0d5",
+    "test_plan_id": "synthetic-fixture",
+    "notes": "Case C：执行异常，error 非 null，judge 强制 0 分"
+  }
+}

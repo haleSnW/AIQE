@@ -18,6 +18,28 @@ logger = logging.getLogger(__name__)
 
 RegressionStatus = Literal["pass", "degraded", "regression", "new"]
 
+#: 退化判定阈值（唯一事实来源）。delta 低于该值判为 regression。
+DEGRADATION_THRESHOLD = 0.15
+
+
+def classify_delta(delta: float, threshold: float = DEGRADATION_THRESHOLD) -> RegressionStatus:
+    """把分数变化量归类为回归状态。
+
+    【为什么抽成模块级函数？】
+      运行级对比（AIQE/comparison.py）需要同一套阈值语义。把规则留在
+      RegressionAnalyzer.analyze() 内部会导致两处各写一份阈值判断，
+      一旦阈值调整就会静默分叉。此处集中定义，analyze() 与 comparison
+      共用同一实现。
+
+    【语义】delta == 0 判为 "degraded"（只有提升才算 pass），
+      这是框架既有语义，保持不变。
+    """
+    if delta > 0:
+        return "pass"
+    if delta < -threshold:
+        return "regression"
+    return "degraded"
+
 
 class RegressionResult:
     """单次回归分析结果。"""
@@ -56,7 +78,7 @@ class RegressionAnalyzer:
       - score 下降 ≤ 0.15      → status="degraded"
     """
 
-    DEGRADATION_THRESHOLD = 0.15
+    DEGRADATION_THRESHOLD = DEGRADATION_THRESHOLD
 
     def __init__(self, storage_path: str | Path = "~/.AIQE/results") -> None:
         self._storage_path = Path(storage_path).expanduser()
@@ -100,13 +122,7 @@ class RegressionAnalyzer:
             )
 
         delta = current_score - base_score
-
-        if delta > 0:
-            status: RegressionStatus = "pass"
-        elif delta < -self.DEGRADATION_THRESHOLD:
-            status = "regression"
-        else:
-            status = "degraded"
+        status = classify_delta(delta, self.DEGRADATION_THRESHOLD)
 
         return RegressionResult(
             case_id=case_id,

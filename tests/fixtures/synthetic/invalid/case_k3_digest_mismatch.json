@@ -1,0 +1,73 @@
+{
+  "test_plan_id": "synthetic-fixture",
+  "generated_at": "2026-09-22T00:00:00+00:00",
+  "project": "AIQE",
+  "version": "0.1.0",
+  "cases": [
+    {
+      "case_id": "alpha",
+      "category": "chat",
+      "prompt": "你好，请用一句话介绍你自己。",
+      "execution": {
+        "response": "你好！我是一个合成样本中的 AI 助手。",
+        "tokens_generated": 12,
+        "elapsed_sec": 0.12,
+        "tok_per_sec": 100.0,
+        "backend": "mock",
+        "model_id": "demo-model-a",
+        "error": null,
+        "trace_id": "x0000001",
+        "payload_hash": "3a1fb63f0d3e765c"
+      },
+      "judge": {
+        "score": 0.1,
+        "passed": true,
+        "breakdown": {
+          "relevance": 1.0,
+          "correctness": 1.0,
+          "completeness": 1.0,
+          "formatting": 1.0,
+          "confidence": 1.0
+        },
+        "checks": {
+          "empty_response": false,
+          "length_ok": true,
+          "keywords_match": true,
+          "format_ok": true
+        },
+        "reasons": [
+          "关键词命中 2/2（100%）"
+        ],
+        "metrics": {
+          "response_length": 18,
+          "keyword_hits": 2,
+          "keyword_total": 2,
+          "format_score": 1.0
+        }
+      }
+    }
+  ],
+  "summary": {
+    "passed": 1,
+    "total": 1,
+    "regressions": []
+  },
+  "schema_version": "aiqe.result/0.1.0",
+  "metadata": {
+    "run_id": "synth-run-k3",
+    "created_at": "2026-09-22T00:00:00+00:00",
+    "dataset_id": "aiqe-demo",
+    "dataset_version": "1.0.0",
+    "judge_id": "aiqe.deterministic-judge",
+    "judge_version": "0.1.0",
+    "model_id": "demo-model-a",
+    "backend_id": "mock",
+    "source_type": "synthetic",
+    "data_classification": "public_synthetic",
+    "generator": "aiqe.synthetic/0.1.0",
+    "generator_version": "0.1.0",
+    "content_digest": "3f0503cab5c37e31218b5b40e25b9702",
+    "test_plan_id": "synthetic-fixture",
+    "notes": ""
+  }
+}

@@ -1,0 +1,65 @@
+{
+  "test_plan_id": "synthetic-fixture",
+  "generated_at": "2026-09-22T00:00:00+00:00",
+  "project": "AIQE",
+  "version": "0.1.0",
+  "cases": [
+    {
+      "case_id": "json_case",
+      "category": "json_output",
+      "prompt": "以JSON格式输出一行：{\"name\": \"AI\"}",
+      "execution": {
+        "response": "",
+        "tokens_generated": 0,
+        "elapsed_sec": 0.05,
+        "tok_per_sec": 0.0,
+        "backend": "mock",
+        "model_id": "demo-model-a",
+        "error": null,
+        "trace_id": "e0000001",
+        "payload_hash": "d41d8cd98f00b204"
+      },
+      "judge": {
+        "score": 0.0,
+        "passed": false,
+        "breakdown": {
+          "relevance": 1.0,
+          "correctness": 1.0,
+          "completeness": 1.0,
+          "formatting": 1.0,
+          "confidence": 1.0
+        },
+        "checks": {
+          "empty_response": true
+        },
+        "reasons": [
+          "响应为空"
+        ],
+        "metrics": {}
+      }
+    }
+  ],
+  "summary": {
+    "passed": 0,
+    "total": 1,
+    "regressions": []
+  },
+  "schema_version": "aiqe.result/0.1.0",
+  "metadata": {
+    "run_id": "synth-run-e",
+    "created_at": "2026-09-22T00:00:00+00:00",
+    "dataset_id": "aiqe-demo",
+    "dataset_version": "1.0.0",
+    "judge_id": "aiqe.deterministic-judge",
+    "judge_version": "0.1.0",
+    "model_id": "demo-model-a",
+    "backend_id": "mock",
+    "source_type": "synthetic",
+    "data_classification": "public_synthetic",
+    "generator": "aiqe.synthetic/0.1.0",
+    "generator_version": "0.1.0",
+    "content_digest": "01ef596e23582155367986dfcf33bb09",
+    "test_plan_id": "synthetic-fixture",
+    "notes": "Case E：指标缺失。空响应分支不产出 format_score —— 是缺失，不是 0"
+  }
+}

@@ -1,0 +1,30 @@
+{
+  "test_plan_id": "synthetic-fixture",
+  "generated_at": "2026-09-22T00:00:00+00:00",
+  "project": "AIQE",
+  "version": "0.1.0",
+  "cases": [],
+  "summary": {
+    "passed": 0,
+    "total": 0,
+    "regressions": []
+  },
+  "schema_version": "aiqe.result/0.1.0",
+  "metadata": {
+    "run_id": "synth-run-m",
+    "created_at": "2026-09-22T00:00:00+00:00",
+    "dataset_id": "aiqe-demo",
+    "dataset_version": "1.0.0",
+    "judge_id": "aiqe.deterministic-judge",
+    "judge_version": "0.1.0",
+    "model_id": "demo-model-a",
+    "backend_id": "mock",
+    "source_type": "synthetic",
+    "data_classification": "public_synthetic",
+    "generator": "aiqe.synthetic/0.1.0",
+    "generator_version": "0.1.0",
+    "content_digest": "af812eca70c18f9cd3ff6a49b186fbec",
+    "test_plan_id": "synthetic-fixture",
+    "notes": "附加边界：空用例集。比例指标为 null（无定义），计数指标为 0（确定结果）"
+  }
+}
