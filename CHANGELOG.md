@@ -7,6 +7,41 @@ All notable changes to this repository. Format based on
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), versioning follows
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+
+- **统一结果数据契约 `aiqe.result/0.1.0`** — `AIQE.contract`：运行/用例/指标校验、
+  内容摘要、敏感字段默认拒绝；来源默认只接受受信生成器产出的 `synthetic`。
+  配套指标口径 `aiqe.metrics/0.1.0` 与运行级回归对比 `AIQE.comparison`
+  （与 `RegressionAnalyzer` 共用 `classify_delta` 阈值）。
+- **公开合成数据生成器** — `AIQE.synthetic`（`aiqe.synthetic/0.1.0`）与
+  `tests/fixtures/synthetic/` 有效/无效夹具。
+- **离线质量看板** — `AIQE.dashboard`：总览、回归、趋势、多维分析、数据完整性五区，
+  单文件 HTML、零 CDN、`file://` 直接打开、亮暗主题与移动布局；示例
+  `examples/showcase_dashboard.py`。
+- **多维质量分析** — `AIQE.dashboard_analysis` 加法聚合层：按数据集、评分器、模型、
+  后端、来源、分级切换柱状图、构成环图和精确透视表；比率合并分子/分母，
+  token 实测与估算分离，幻觉与火焰图缺数据时显式显示 unavailable。
+- **看板来源控制** — `--allow-source` 显式放开非合成来源；出现非合成来源时横幅常驻
+  「禁止提交入库、禁止对外分享」警示；非 `public_synthetic` 产物拒绝写入 Git 工作树。
+- **工作项证据契约 `aiqe.workbench/0.1.0`** — `AIQE.workbench_contract` /
+  `workbench_adapter`：Q5/Q6/Q7 展示事实，声明值不冒充已验证事实；示例
+  `examples/showcase_workbench.py`。
+- **OpenAI 兼容后端** — `AIQE.backends.openai_compatible` 与标准库 HTTP 传输
+  `AIQE.http_transport`：非流式、超时与响应大小有界、禁止重定向、凭据不进 repr、
+  `resolved_model_id` 只取自响应（缺失为 `None`，不以别名代填）。
+- **看板浏览器 E2E（可选）** — `tools/dashboard_browser_check.cjs`（Playwright 为开发工具，
+  非运行时依赖）。
+- **看板证据契约冻结** — `docs/architecture/AIQE_EVIDENCE_CONTRACT_FREEZE_20261108.md`：
+  定义 E0–E3 证据等级、Runner provenance 最小字段与人工 Gold 最小要求（仅冻结契约，实现未开始）。
+
+### Changed
+
+- `RegressionAnalyzer` 的退化阈值提取为模块级 `DEGRADATION_THRESHOLD` 与
+  `classify_delta()`，行为不变。
+- `.gitignore` 增加 `outputs/`、`.playwright-cli/` 与 macOS `._*` 伴随文件。
+
 ## [v0.1.0] - 2026-08-18
 
 ### Initial open-source release

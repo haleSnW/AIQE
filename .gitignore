@@ -12,6 +12,10 @@ venv/
 
 # pytest
 .pytest_cache/
+.playwright-cli/
+
+# 本地交付产物（公开合成数据；真实数据仍禁止写入工作树）
+outputs/
 
 # 评估产物（本地运行 AIQE 报告/基线时产生）
 .AIQE/
@@ -21,3 +25,6 @@ AIQE-report.json
 # 示例产物（examples/ 脚本本地运行产生）
 examples/.regression-demo/
 AIQE-report-*.json
+
+# macOS 伴随元数据（非原生文件系统上写入时产生 ._* 文件）
+._*

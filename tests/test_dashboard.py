@@ -138,3 +138,30 @@ def test_preexisting_temp_symlink_cannot_receive_dashboard_data(tmp_path):
     write_dashboard([FIXTURES / 'valid'], target)
     assert victim.read_text(encoding='utf-8') == 'original'
     assert 'AIQE Dashboard' in target.read_text(encoding='utf-8')
+
+
+def test_dashboard_payload_contains_additive_multidimensional_analysis(tmp_path):
+    _, payload = write_dashboard([FIXTURES / 'valid'], tmp_path / 'index.html')
+
+    assert payload['analysis']['scale']['run_count'] == payload['totals']['run_count']
+    assert payload['analysis']['scale']['case_execution_count'] == sum(
+        run['case_count'] for run in payload['runs']
+    )
+    assert payload['analysis']['dimensions']['model']['rows']
+
+
+def test_multidimensional_ui_is_offline_and_exposes_accessible_regions(tmp_path):
+    path, _ = write_dashboard([FIXTURES / 'valid'], tmp_path / 'index.html')
+    html = path.read_text(encoding='utf-8')
+
+    assert "connect-src 'none'" in html
+    assert 'href="#explorer"' in html
+    for element_id in (
+        'explorer', 'explorer-dimension', 'explorer-bars', 'explorer-bar-table',
+        'explorer-donut', 'explorer-status-table', 'explorer-pivot',
+        'explorer-scale', 'explorer-capabilities',
+        'capability-hallucination', 'capability-flame_graph',
+    ):
+        assert f'id="{element_id}"' in html
+    assert '<script src=' not in html
+    assert '<link rel="stylesheet"' not in html
