@@ -1,6 +1,6 @@
 """AIQE Dashboard —— 本地质量看板（数据层）。
 
-设计依据：[`docs/plans/AIQE_DASHBOARD_MVP.md`](../../docs/plans/AIQE_DASHBOARD_MVP.md)
+指标定义：[`docs/architecture/AIQE_METRICS_V01.md`](../../docs/architecture/AIQE_METRICS_V01.md)
 
 本模块只负责**读取、校验、分组、比对、组装 payload**，不产生任何新指标、
 不做任何判定。所有数值都来自 [`contract.compute_run_metrics`] 与
@@ -30,8 +30,11 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Iterable, Sequence
 
+from .workbench_contract import WorkbenchContractError, validate_workbench_document
 from .comparison import RegressionComparison, compare_runs
+from .dashboard_analysis import build_analysis_payload
 from .contract import (
+    ALLOWED_SOURCE_TYPES,
     METRICS_VERSION,
     ContractViolation,
     DataClassification,
@@ -155,13 +158,25 @@ def _iter_json_files(target: Path) -> list[Path]:
     return []
 
 
-def load_runs(paths: Sequence[str | Path]) -> tuple[list[LoadedRun], list[LoadFailure]]:
+def load_runs(
+    paths: Sequence[str | Path],
+    *,
+    allowed_source_types: Iterable[SourceType] | None = None,
+) -> tuple[list[LoadedRun], list[LoadFailure]]:
     """加载并校验若干路径下的运行结果。
 
     返回 `(成功列表, 失败列表)`。**失败不会被丢弃**——调用方必须把
     `failures` 展示出来。校验严格复用 [`contract.load_run`]，
     不为了「让图表好看」而放宽任何一条规则。
+
+    allowed_source_types 默认沿用契约的默认集合（仅 `synthetic`）。
+    要看导入的真实数据，必须由调用方**显式**传入包含 `local_import` 的集合，
+    例如 `--allow-source local_import`。这个参数是「放开真实数据是一个
+    可审计的显式动作」的落点，不是绕过检查的开关。
     """
+    allowed = (
+        None if allowed_source_types is None else frozenset(allowed_source_types)
+    )
     loaded: list[LoadedRun] = []
     failures: list[LoadFailure] = []
     seen_paths: set[Path] = set()
@@ -185,7 +200,13 @@ def load_runs(paths: Sequence[str | Path]) -> tuple[list[LoadedRun], list[LoadFa
             seen_paths.add(resolved)
 
             try:
-                run = load_run(path)
+                # 未显式放开来源时保持原调用形状（不传关键字参数）：
+                # 契约默认集合仍是唯一真相，同时不破坏既有 monkeypatch stub。
+                run = (
+                    load_run(path)
+                    if allowed is None
+                    else load_run(path, allowed_source_types=allowed)
+                )
             except ContractViolation as exc:
                 failures.append(LoadFailure(
                     source_path=str(path),
@@ -587,15 +608,87 @@ def _group_payload(group: RunGroup) -> dict[str, Any]:
     }
 
 
+def build_workbench_payload(paths: Sequence[str | Path]) -> dict[str, Any]:
+    """Read explicit result-only workbench files through the existing contract.
+
+    No native reports, prompt/response fields, or unvalidated extensions enter
+    this export. Read failures and identity conflicts remain visible. Contract
+    validation checks consistency; it does not authenticate evidence digests.
+    """
+    def unique_object(pairs):
+        result = {}
+        for key, value in pairs:
+            if key in result:
+                raise ValueError("duplicate JSON key")
+            result[key] = value
+        return result
+
+    def invalid_constant(value):
+        raise ValueError("non-finite JSON constant")
+
+    items: list[dict[str, Any]] = []
+    failures: list[dict[str, str]] = []
+    seen: set[Path] = set()
+    for raw in paths:
+        target = Path(raw).expanduser()
+        files = _iter_json_files(target)
+        if not files:
+            failures.append({"source_path": str(target), "reason_code": "NO_WORKBENCH_FILES",
+                             "message": "No workbench JSON files found."})
+        for path in files:
+            resolved = path.resolve()
+            if resolved in seen:
+                continue
+            seen.add(resolved)
+            try:
+                with path.open("rb") as stream:
+                    content = stream.read(4 * 1024 * 1024 + 1)
+                if len(content) > 4 * 1024 * 1024:
+                    raise ValueError("document too large")
+                document = json.loads(content.decode("utf-8"), object_pairs_hook=unique_object,
+                                      parse_constant=invalid_constant)
+                facts = validate_workbench_document(document)
+            except WorkbenchContractError as exc:
+                failures.append({"source_path": str(path), "reason_code": exc.code,
+                                 "message": "Contract rejected this result-only workbench document."})
+                continue
+            except (ValueError, UnicodeError, RecursionError):
+                failures.append({"source_path": str(path), "reason_code": "INVALID_JSON",
+                                 "message": "Invalid, duplicate-key, non-finite, or oversized JSON."})
+                continue
+            except OSError:
+                failures.append({"source_path": str(path), "reason_code": "FILE_UNREADABLE",
+                                 "message": "Unable to read this file."})
+                continue
+            items.append({"source_path": str(path), "facts": facts, "document": document})
+
+    identities: dict[tuple[str, str], list[dict[str, Any]]] = {}
+    for item in items:
+        facts = item["facts"]
+        identities.setdefault((facts["run_id"], facts["work_item_id"]), []).append(item)
+    conflicts = {key for key, group in identities.items() if len(group) > 1}
+    for key in sorted(conflicts):
+        for item in identities[key]:
+            failures.append({"source_path": item["source_path"],
+                             "reason_code": "DUPLICATE_WORK_ITEM",
+                             "message": "Conflicting run/work-item identity; all copies excluded."})
+    items = [item for item in items if (item["facts"]["run_id"], item["facts"]["work_item_id"]) not in conflicts]
+    items.sort(key=lambda item: (item["facts"]["run_id"], item["facts"]["work_item_id"]))
+    return {"items": items, "unreadable": failures}
+
+
 def build_payload(
     paths: Sequence[str | Path],
     generated_at: str | None = None,
+    *,
+    allowed_source_types: Iterable[SourceType] | None = None,
 ) -> dict[str, Any]:
     """组装完整页面数据。
 
     `generated_at` 可注入，使输出**确定性可测**（默认取当前 UTC 时间）。
+    `allowed_source_types` 透传给 [`load_runs`]，默认仅合成数据。
     """
-    loaded, failures = load_runs(paths)
+    loaded, failures = load_runs(paths, allowed_source_types=allowed_source_types)
     for item in loaded:
         ensure_metrics(item)
 
@@ -604,6 +697,7 @@ def build_payload(
     if generated_at is None:
         generated_at = datetime.now(timezone.utc).isoformat(timespec="seconds")
 
+    run_payloads = [_run_payload(item) for item in sorted(loaded, key=lambda r: r.sort_key)]
     return {
         "dashboard_version": DASHBOARD_VERSION,
         "metrics_version": METRICS_VERSION,
@@ -614,7 +708,8 @@ def build_payload(
             "group_count": len(groups),
             "unreadable_count": len(failures),
         },
-        "runs": [_run_payload(item) for item in sorted(loaded, key=lambda r: r.sort_key)],
+        "runs": run_payloads,
+        "analysis": build_analysis_payload(run_payloads),
         "groups": [_group_payload(g) for g in groups],
         "unreadable": [f.to_dict() for f in failures],
     }
@@ -675,9 +770,10 @@ def check_output_safety(target: Path, payload: dict[str, Any]) -> None:
             f"或先在 .gitignore 中忽略该路径。"
         )
 
+    safety_runs = list(payload["runs"]) + [item["facts"] for item in payload.get("workbench", {}).get("items", [])]
     unsafe = sorted({
         r["run_id"]
-        for r in payload["runs"]
+        for r in safety_runs
         if r["data_classification"] != DataClassification.PUBLIC_SYNTHETIC.value
     })
     if unsafe:
@@ -713,7 +809,10 @@ def inline_json(payload: Any) -> str:
 
 def render_html(payload: dict[str, Any]) -> str:
     """渲染为单文件、自包含的 HTML。"""
-    from .dashboard_template import TEMPLATE
+    if "workbench" in payload:
+        from .workbench_template import TEMPLATE
+    else:
+        from .dashboard_template import TEMPLATE
 
     return TEMPLATE.replace("__AIQE_DATA__", inline_json(payload))
 
@@ -722,13 +821,22 @@ def write_dashboard(
     paths: Sequence[str | Path],
     out: str | Path,
     generated_at: str | None = None,
+    *,
+    workbench_paths: Sequence[str | Path] | None = None,
+    allowed_source_types: Iterable[SourceType] | None = None,
 ) -> tuple[Path, dict[str, Any]]:
     """读取 → 校验 → 组装 → 安全检查 → 写入。返回 (产物路径, payload)。
 
     先写 `.tmp` 再 `replace`，避免中途失败留下半成品
     （与既有 `reporter.to_json` 的落盘方式一致）。
     """
-    payload = build_payload(paths, generated_at=generated_at)
+    if workbench_paths is not None and paths:
+        raise DashboardError("Use either run reports or workbench documents per export.")
+    payload = build_payload(
+        paths, generated_at=generated_at, allowed_source_types=allowed_source_types
+    )
+    if workbench_paths is not None:
+        payload["workbench"] = build_workbench_payload(workbench_paths)
     target = Path(out).expanduser()
 
     check_output_safety(target, payload)
@@ -766,20 +874,40 @@ def main(argv: Iterable[str] | None = None) -> int:
         prog="python -m AIQE.dashboard",
         description="AIQE 本地质量看板 —— 从契约运行结果生成单文件 HTML。",
     )
-    parser.add_argument(
+    inputs = parser.add_mutually_exclusive_group()
+    inputs.add_argument(
         "--runs", "-r", action="append", default=[], metavar="PATH",
         help="运行结果文件或目录，可重复指定。目录下的 *.json 会被逐个校验。",
+    )
+    inputs.add_argument(
+        "--workbench", "-w", action="append", default=[], metavar="PATH",
+        help="Validated workbench document file or directory; repeat for multiple sources.",
     )
     parser.add_argument(
         "--out", "-o", default=DEFAULT_OUT, metavar="FILE",
         help=f"输出 HTML 路径（默认 {DEFAULT_OUT}）",
     )
+    parser.add_argument(
+        "--allow-source", action="append", default=[],
+        choices=[item.value for item in SourceType], metavar="TYPE",
+        help=(
+            "额外允许的数据来源，可重复。默认只允许 synthetic。"
+            "查看经导入契约校验的真实数据需要显式给出 local_import；"
+            "这个开关只是把契约的放行集合显式化，不放宽任何一条校验。"
+        ),
+    )
     args = parser.parse_args(list(argv) if argv is not None else None)
 
-    paths = args.runs or ["~/.AIQE/results/runs"]
+    allowed: frozenset[SourceType] | None = None
+    if args.allow_source:
+        allowed = frozenset({SourceType(item) for item in args.allow_source}) | ALLOWED_SOURCE_TYPES
+
+    paths = [] if args.workbench else (args.runs or ["~/.AIQE/results/runs"])
 
     try:
-        target, payload = write_dashboard(paths, args.out)
+        target, payload = write_dashboard(paths, args.out,
+                                          workbench_paths=args.workbench or None,
+                                          allowed_source_types=allowed)
     except OutputNotSafeError as exc:
         print(f"错误：{exc}")
         return 2
@@ -789,6 +917,12 @@ def main(argv: Iterable[str] | None = None) -> int:
 
     totals = payload["totals"]
     print(f"已生成：{target}")
+    if args.workbench:
+        workbench = payload["workbench"]
+        print(f"  Workbench: {len(workbench['items'])} items; {len(workbench['unreadable'])} rejected files")
+        for failure in workbench["unreadable"]:
+            print(f"      [{failure['reason_code']}] {failure['source_path']}")
+        return 0
     print(f"  运行数：{totals['run_count']}    分组：{totals['group_count']}")
     if totals["unreadable_count"]:
         print(f"  ⚠️  {totals['unreadable_count']} 个文件无法读取（页面中已列出原因）")

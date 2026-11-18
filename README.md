@@ -27,7 +27,7 @@ JSON 报告**。它在开发流程中**同步配合开发 harness 使用**——
 
 ## 可直接查看的质量看板演示
 
-![AIQE 六次合成运行的质量看板首屏](docs/demo/preview.png)
+![AIQE 六次合成运行的多维分析视图](docs/demo/preview.png)
 
 [打开单文件 HTML 源文件](docs/demo/index.html)并下载后在浏览器打开，或用下面的命令
 从源码重新生成。页面内联数据、样式和脚本，可离线使用；无需模型、CDN 或账号。
@@ -44,6 +44,22 @@ PYTHONPATH=src python examples/showcase_dashboard.py --out /tmp/aiqe-showcase
 [`docs/demo/index.html`](docs/demo/index.html) 是经公开合成来源检查后单独审阅、
 复制的固定演示产物；对应的可复算测试见
 [`tests/test_showcase_dashboard.py`](tests/test_showcase_dashboard.py)。
+
+看板包含总览、回归、趋势、多维分析和数据完整性五个区块。多维分析可按数据集、评分器、
+模型、后端、来源和分级切换柱状图、构成环图与精确透视表，并展示运行、用例执行、token
+和指标覆盖规模；聚合只用可加口径，缺失不是 0，实测与估算 token 不混合。当前没有幻觉
+评估和 span 数据，对应区域明确显示能力缺口，不伪造图形。可选的 Playwright 验收器
+`tools/dashboard_browser_check.cjs` 会直接打开已生成的 HTML，输出机器报告与桌面/暗色/
+移动截图（Playwright 只是开发工具，不是运行时依赖）。结果数据契约见
+[AIQE 结果契约 v0.1](docs/architecture/AIQE_RESULT_CONTRACT_V01.md)，指标口径见
+[指标定义 v0.1](docs/architecture/AIQE_METRICS_V01.md)，模板选型见[模板目录](templates/README.md)。
+
+**真实数据接入（尚未开放）**：看板默认只接受通过契约校验的合成运行；`--allow-source`
+只用于本机查看，非 `public_synthetic` 产物会被拒绝写入 Git 工作树。看板能声称什么、
+不能声称什么，已在[看板证据契约冻结](docs/architecture/AIQE_EVIDENCE_CONTRACT_FREEZE_20261108.md)
+中固定：运行按证据等级 E0（合成）→ E1（本地结果）→ E2（Runner 来源证明）→ E3（人工 Gold
+校准）区分，不同等级不合并计算，缺字段即降级。真实 Runner 来源证明和人工 Gold 到位之前，
+E2/E3 不可达；等级徽标与校验器排在下一阶段实现。
 
 ---
 
@@ -79,6 +95,7 @@ PYTHONPATH=src python examples/showcase_dashboard.py --out /tmp/aiqe-showcase
 | 后端 | 状态 | 开箱即用？ | 说明 |
 |---|---|---|---|
 | **Mock Backend**（默认） | **Built-in** | ✅ 是 | `backends/mock.py` 确定性响应，零依赖零网络，CI/离线演示用它 |
+| **OpenAI 兼容后端** | **实验性适配器** | 🟡 需配置 | [标准库 HTTP 客户端](src/AIQE/backends/openai_compatible.py)，需明确配置端点和模型。测试使用替身传输 |
 | **Ollama Adapter** | **Example Adapter** | 🟡 实验性 | `examples/ollama_backend.py` 是接入示例；需本地 Ollama 服务与模型，按示例自行组装 |
 | **MLX Backend** | **Skeleton Adapter** | 🟠 需自行集成 | `backends/mlx.py` 是骨架：结构完整但 `setup()` 明确报 `ImportError`，需自行安装 mlx-lm 并注入满足 Backend Protocol 的适配层 |
 | **llama.cpp** | **Protocol Compatible** | 🟠 需外部适配层 | 仓库内无实现；只要实现 `AIQE.protocol.Backend`（`generate_sync` / `generate` / `backend_type` / `profile`）即可注入，流水线零改动 |
@@ -261,7 +278,7 @@ src/AIQE/
     ├── test_cases.py      # 4 个标准用例（chat/translation/json/coding）
     ├── extended_cases.py  # 6 个扩展用例（中文场景）
     └── boundary_cases.py  # 8 个边界用例（长输入/对抗/冲突/精度…）
-tests/                       # 契约测试（111 项，pytest -q 全绿）
+tests/                       # 单元、契约和回归测试（python -m pytest -q）
 examples/
     quick_score.py           # 30 秒快速跑分示例（mock）
     ollama_backend.py        # ollama 真实模型接入示例
@@ -508,8 +525,4 @@ AIQE 由独立开发者 haleSnW 创建。
 
 欢迎进行技术交流与合作。
 
-联系方式：
-
-- GitHub: @haleSnW
-- Email: halewon@outlook.com
-- 创作主页：[HaleSona · 爱发电](https://afdian.com/a/2846579h)
+项目问题和建议可通过 [GitHub Issues](https://github.com/haleSnW/AIQE/issues) 提交。

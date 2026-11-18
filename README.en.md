@@ -34,6 +34,7 @@ pipeline applies.
 
 - [AIQE — A Shift-Left AI Quality Evaluation Framework (Reference Implementation)](#aiqe--a-shift-left-ai-quality-evaluation-framework-reference-implementation)
   - [Table of Contents](#table-of-contents)
+  - [Offline quality evidence](#offline-quality-evidence)
   - [Backend Support Matrix](#backend-support-matrix)
   - [2. The Shift-Left Idea: Why Score Before Generating](#2-the-shift-left-idea-why-score-before-generating)
   - [3. Who It's For: AIQE by Product Shape](#3-who-its-for-aiqe-by-product-shape)
@@ -52,6 +53,13 @@ pipeline applies.
 
 ---
 
+## Offline quality evidence
+
+Download the [synthetic dashboard demo](docs/demo/index.html) and open it in your browser, or generate it locally with `PYTHONPATH=src python examples/showcase_dashboard.py --out /tmp/aiqe-showcase`.
+The dashboard covers overview, regression, trends, multidimensional analysis, and data completeness. It accepts validated synthetic data by default.
+The workbench has a separate [synthetic example](examples/showcase_workbench.py).
+See the [result contract](docs/architecture/AIQE_RESULT_CONTRACT_V01.md), [metric definitions](docs/architecture/AIQE_METRICS_V01.md) and [evidence levels](docs/architecture/AIQE_EVIDENCE_CONTRACT_FREEZE_20261108.md). Evidence-level validation and badges are planned.
+
 ## Backend Support Matrix
 
 **Read this first**: AIQE's evaluation pipeline knows nothing about concrete
@@ -62,6 +70,7 @@ so you won't assume everything works out of the box:
 | Backend | Status | Ready out of the box? | Notes |
 |---|---|---|---|
 | **Mock Backend** (default) | **Built-in** | ✅ Yes | `backends/mock.py` — deterministic responses, zero dependencies, no network. Use it for CI and offline demos |
+| **OpenAI-compatible backend** | **Experimental adapter** | 🟡 Requires configuration | [Standard-library HTTP client](src/AIQE/backends/openai_compatible.py). Configure an endpoint and model explicitly. Tests use a test transport |
 | **Ollama Adapter** | **Example Adapter** | 🟡 Experimental | `examples/ollama_backend.py` is an integration example; requires a local Ollama service and model. Assemble it yourself following the example |
 | **MLX Backend** | **Skeleton Adapter** | 🟠 Requires Integration | `backends/mlx.py` is a skeleton: complete structure, but `setup()` explicitly raises `ImportError` — install mlx-lm yourself and inject an adapter satisfying the Backend Protocol |
 | **llama.cpp** | **Protocol Compatible** | 🟠 External Adapter Required | No implementation in this repo; implement `AIQE.protocol.Backend` (`generate_sync` / `generate` / `backend_type` / `profile`) and inject it — zero pipeline changes |
@@ -258,7 +267,7 @@ src/AIQE/
     ├── test_cases.py      # 4 standard cases (chat/translation/json/coding)
     ├── extended_cases.py  # 6 extended cases (Chinese scenarios)
     └── boundary_cases.py  # 8 boundary cases (long input/adversarial/conflict/precision…)
-tests/                       # contract tests (111, all green with `pytest -q`)
+tests/                       # unit, contract and regression tests (python -m pytest -q)
 examples/
     quick_score.py           # 30-second quick scoring example (mock)
     ollama_backend.py        # real-model integration example (ollama)
@@ -496,7 +505,7 @@ count.
 
 **Are AIQE's tests trustworthy?**
 
-The repo ships 111 contract tests (all green with `pytest -q`) covering
+Run `python -m pytest -q` to check the following behaviors:
 protocol, scoring, regression, error contracts, and format regressions; the
 current mock-backend scoring flow is deterministic: the same input produces a
 consistent result.
@@ -524,7 +533,4 @@ If your team is exploring:
 
 Technical exchange and collaboration are welcome.
 
-Contact:
-
-- GitHub: @haleSnW
-- Email: halewon@outlook.com
+Use [GitHub Issues](https://github.com/haleSnW/AIQE/issues) for project questions and feedback.
