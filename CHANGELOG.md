@@ -11,6 +11,13 @@ All notable changes to this repository. Format based on
 
 ### Added
 
+- **E2E 质量门禁 `aiqe.e2e-gate/0.1.0`** — `AIQE.e2e_gate`：读取 Playwright JSON 报告、可选基线
+  报告和测试 diff，输出 PASS / ESCALATE / BLOCK 和稳定原因码（新增失败、flaky、跳过或删除用例、
+  缺 trace，以及 healer 守卫：删断言、宽松匹配器、吞异常、新增 skip/only、超出测试范围的改动）。
+  diff 发现按行号归属到用例；判定结果可投影为 `aiqe.result` 文档（`local_test`，只存原因码）
+  并进入看板。实现只用标准库，不调用模型，不依赖 Playwright。附六场景演示
+  `examples/e2e_gate_demo.py`、GitHub Actions 示例和 `docs/E2E_GATE.md`。
+
 - **统一结果数据契约 `aiqe.result/0.1.0`** — `AIQE.contract`：运行/用例/指标校验、
   内容摘要、敏感字段默认拒绝；来源默认只接受受信生成器产出的 `synthetic`。
   配套指标口径 `aiqe.metrics/0.1.0` 与运行级回归对比 `AIQE.comparison`

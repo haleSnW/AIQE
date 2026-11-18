@@ -28,6 +28,26 @@ pipeline applies.
 > and test-covered; real inference backends are "example / skeleton" level —
 > see the [Backend Support Matrix](#backend-support-matrix) below.
 
+## New: E2E quality gate (AI-healed tests must not turn green silently)
+
+AI healers such as Playwright Test Agents auto-repair failing E2E tests. A healer can fix a locator, or it can delete an assertion, and CI only sees the exit code.
+`AIQE.e2e_gate` reads the Playwright JSON report, a baseline report and the test diff.
+It returns **PASS / ESCALATE / BLOCK** with stable reason codes, makes no model calls and does not depend on Playwright.
+
+```bash
+PYTHONPATH=src python examples/e2e_gate_demo.py --out /tmp/aiqe-e2e-demo
+```
+
+| Scenario | Playwright | Gate |
+|---|---|---|
+| Honest healer fixes a locator; a product bug remains | 1 failed | BLOCK `NEW_FAILURE` |
+| **Cheating healer removes an assertion and loosens a matcher** | **all green** | **BLOCK** `ASSERTION_REMOVED` `MATCHER_LOOSENED` |
+| Product fixed + honest healer | all green | PASS |
+| Passes only on retry | all green | ESCALATE `FLAKY` |
+
+To use it, add one CI step: `python -m AIQE.e2e_gate --report pw-report.json --patch e2e.diff`. Exit codes 0, 1, 2, and 3 mean the rules passed, blocked, require human review, or could not parse the input. Use a patch scoped to the test repair.
+See [E2E Quality Gate](docs/E2E_GATE.en.md) for the reason codes, boundaries and a GitHub Actions example.
+
 ---
 
 ## Table of Contents

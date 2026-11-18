@@ -25,6 +25,27 @@ JSON 报告**。它在开发流程中**同步配合开发 harness 使用**——
 > 评分 → 回归 → 报告）已完整并有测试保障；真实推理后端为「示例 / 骨架」
 > 状态，接入细节见下文 [后端支持矩阵](#后端支持矩阵)。
 
+## 新：E2E 质量门禁，AI 修过的测试不能悄悄变绿
+
+AI healer（例如 Playwright Test Agents）会自动修失败的 E2E 测试。它可以修定位器，也可以删断言，
+而 CI 只看退出码，分不出是哪一种。`AIQE.e2e_gate` 读取 Playwright JSON 报告、基线报告和本次的测试 diff，
+给出 **PASS / ESCALATE / BLOCK** 以及稳定的原因码。它不调用模型，也不依赖 Playwright 包。
+
+```bash
+PYTHONPATH=src python examples/e2e_gate_demo.py --out /tmp/aiqe-e2e-demo
+```
+
+| 场景 | Playwright | 门禁 |
+|---|---|---|
+| 诚实 healer 只修定位器，剩下的是产品缺陷 | 1 失败 | BLOCK `NEW_FAILURE` |
+| **取巧 healer 删断言、换宽松匹配** | **全绿** | **BLOCK** `ASSERTION_REMOVED` `MATCHER_LOOSENED` |
+| 修复产品缺陷 + 诚实 healer | 全绿 | PASS |
+| 重试才通过 | 全绿 | ESCALATE `FLAKY` |
+
+接入只需要在现有 CI 后面加一步：`python -m AIQE.e2e_gate --report pw-report.json --patch e2e.diff`。
+退出码 0、1、2、3 分别对应规则通过、阻断、需人工和输入无法解析。`--patch` 仅传入测试修复的差异。判定可进入质量看板，包含测试名称和路径的产物应保留在受控环境。
+原因码、边界和 GitHub Actions 示例见 [E2E 质量门禁](docs/E2E_GATE.md)。
+
 ## 可直接查看的质量看板演示
 
 ![AIQE 六次合成运行的多维分析视图](docs/demo/preview.png)
