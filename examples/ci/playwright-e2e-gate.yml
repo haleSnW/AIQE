@@ -1,0 +1,62 @@
+# Copy into a repository that already has Playwright tests.
+# This example checks the current run. Add --baseline or --patch only
+# after configuring a trusted baseline or a diff scoped to the healer's changes.
+
+name: e2e
+
+"on":
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  e2e:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - run: npm ci && npx playwright install --with-deps chromium
+
+      - name: Playwright
+        id: playwright
+        env:
+          PLAYWRIGHT_JSON_OUTPUT_FILE: ${{ runner.temp }}/pw-report.json
+        run: npx playwright test --reporter=json --trace=retain-on-failure > "$RUNNER_TEMP/pw.log" 2>&1
+        continue-on-error: true  # Run the gate and retain the native outcome below.
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      # Pin this URL to the reviewed AIQE commit for your project.
+      - run: python -m pip install "git+https://github.com/haleSnW/AIQE.git"
+
+      - name: AIQE E2E gate
+        env:
+          PLAYWRIGHT_OUTCOME: ${{ steps.playwright.outcome }}
+        run: |
+          gate_exit=0
+          python -m AIQE.e2e_gate \
+            --report "$RUNNER_TEMP/pw-report.json" \
+            --out "$RUNNER_TEMP/aiqe-gate.json" \
+            --result-out "$RUNNER_TEMP/aiqe-run.json" --sut-id "$GITHUB_SHA" \
+            > "$RUNNER_TEMP/aiqe-gate.md" 2>&1 || gate_exit=$?
+          case "$gate_exit" in
+            0) verdict=PASS ;;
+            1) verdict=BLOCK ;;
+            2) verdict=ESCALATE ;;
+            *) verdict=ERROR ;;
+          esac
+          printf 'AIQE E2E gate: **%s** (exit %s)\n\nPlaywright step: **%s**\n' \
+            "$verdict" "$gate_exit" "$PLAYWRIGHT_OUTCOME" >> "$GITHUB_STEP_SUMMARY"
+          if [ "$PLAYWRIGHT_OUTCOME" != success ]; then
+            exit 1
+          fi
+          exit "$gate_exit"
